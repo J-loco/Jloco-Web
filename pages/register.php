@@ -40,15 +40,15 @@
 															$ok = false;
 															$error = 3; // invalid mail
 														} else {
-															if(strtoupper($security) != $_SESSION['captcha']) {
-																$ok = false;
-																$error = 4; // invalid captcha
-															} else {
+// 															if(strtoupper($security) != $_SESSION['captcha']) {
+// 																$ok = false;
+// 																$error = 4; // invalid captcha
+// 															} else {
 																if(!isset($_POST['checkbox'])) {
 																	$ok = false;
 																	$error = 5; // invalid checkbox
 																}
-															}
+// 															}
 														}
 													}
 												}												
