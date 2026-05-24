@@ -31,19 +31,19 @@ date_default_timezone_set('Europe/Paris');
 /** Serveurs **/
 	define('REQUEST_TIMEOUT', '1000');
 	/** Serveur login **/
-	define('LOGIN_IP', '127.0.0.1');
+	define('LOGIN_IP', getenv('DB_HOST') ?: '127.0.0.1');
 	define('LOGIN_PORT', '450');
 	define('LOGIN_DB_NAME', 'starloco_login');
 	define('LOGIN_DB_USER', 'root');
-	define('LOGIN_DB_PASS', '');
+	define('LOGIN_DB_PASS', getenv('DB_PASS') ?: '');
 	$login = newPdo(LOGIN_IP, LOGIN_DB_USER, LOGIN_DB_PASS, LOGIN_DB_NAME);
 	
 	/** Serveur jiva **/
-	define('JIVA_IP', '127.0.0.1');
+	define('JIVA_IP', getenv('DB_HOST') ?: '127.0.0.1');
 	define('JIVA_PORT', '5555');
 	define('JIVA_DB_NAME', 'starloco_game');
 	define('JIVA_DB_USER', 'root');
-	define('JIVA_DB_PASS', '');
+	define('JIVA_DB_PASS', getenv('DB_PASS') ?: '');
 	$jiva = newPdo(JIVA_IP, JIVA_DB_USER, JIVA_DB_PASS, JIVA_DB_NAME);
 	
 /** Shop **/
@@ -52,10 +52,10 @@ date_default_timezone_set('Europe/Paris');
 	
 /** Mysql **/
 	/** Variables **/
-	define('DB_IP', '127.0.0.1');
+	define('DB_IP', getenv('DB_HOST') ?: '127.0.0.1');
 	define('DB_NAME', 'starloco_login');
 	define('DB_USER', 'root');
-	define('DB_PASS', '');
+	define('DB_PASS', getenv('DB_PASS') ?: '');
 	$connection = newPdo(DB_IP, DB_USER, DB_PASS, DB_NAME);
 	
 	/** Fonction **/ 

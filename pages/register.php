@@ -75,7 +75,7 @@
 												$query -> bindParam(3, $email);
 												$query -> bindParam(4, $question);
 												$query -> bindParam(5, $answer);
-												$date = date('d/m/y H:i');
+												$date = date('d/m/y');
 												$query -> bindParam(6, $date);
 												
 												$query -> execute();
