@@ -1,0 +1,134 @@
+{% extends 'layout.html.twig' %}
+{% import 'components/ui.html.twig' as ui %}
+
+{% set tabs = {
+    pvm: {route: 'ladder', label: 'Expérience'},
+    pvp: {route: 'ladder_pvp', label: 'Honneur'},
+    guilds: {route: 'ladder_guilds', label: 'Guildes'},
+    jobs: {route: 'ladder_jobs', label: 'Métiers'},
+    votes: {route: 'ladder_votes', label: 'Votes'},
+} %}
+
+{% block title %}Classement {{ tabs[tab].label|lower }}{% endblock %}
+
+{% block content %}
+    {{ ui.page_header('Classements', 'Les 50 meilleurs joueurs du serveur (hors équipe).') }}
+
+    <div class="card overflow-hidden">
+        <nav class="tabs px-2" aria-label="Classements">
+            {% for key, item in tabs %}
+                <a class="tab" href="{{ url(item.route) }}" {% if key == tab %}aria-current="page"{% endif %}>{{ item.label }}</a>
+            {% endfor %}
+        </nav>
+
+        {% if tab == 'jobs' %}
+            <form method="get" action="{{ url('ladder_jobs') }}" class="flex flex-wrap items-end gap-3 border-b border-stone-200 p-4 dark:border-stone-800">
+                <div class="min-w-48 flex-1">
+                    <label class="label" for="job">Métier</label>
+                    <select class="input" id="job" name="job" required>
+                        <option value="" disabled {{ job is null ? 'selected' }}>Choisir un métier</option>
+                        {% for id, name in jobs %}
+                            <option value="{{ id }}" {{ id == job ? 'selected' }}>{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Afficher</button>
+            </form>
+        {% endif %}
+
+        <div class="table-wrap">
+            {% if tab == 'pvm' or tab == 'pvp' %}
+                {% if players %}
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th class="w-12">#</th>
+                                <th>Personnage</th>
+                                <th>Niveau</th>
+                                {% if tab == 'pvm' %}<th>Progression</th>{% endif %}
+                                <th>Alignement</th>
+                                {% if tab == 'pvp' %}<th class="text-right">Honneur</th>{% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for player in players %}
+                                <tr>
+                                    <td class="text-stone-500 tabular-nums">{{ loop.index }}</td>
+                                    <td>
+                                        <span class="font-medium text-stone-900 dark:text-stone-100">{{ player.name }}</span>
+                                        <span class="block text-xs text-stone-500 dark:text-stone-400">{{ player.class|breed(player.sexe) }}</span>
+                                    </td>
+                                    <td class="tabular-nums">{{ player.level }}</td>
+                                    {% if tab == 'pvm' %}<td>{{ ui.progress(player.xp|xp_progress(player.level)) }}</td>{% endif %}
+                                    <td><span class="badge badge-neutral">{{ player.alignement|alignment }}</span></td>
+                                    {% if tab == 'pvp' %}<td class="text-right tabular-nums">{{ player.honor|number_format(0, ',', ' ') }}</td>{% endif %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="p-4">{{ ui.empty('Aucun joueur classé pour le moment.') }}</div>
+                {% endif %}
+
+            {% elseif tab == 'guilds' %}
+                {% if guilds %}
+                    <table class="table">
+                        <thead><tr><th class="w-12">#</th><th>Guilde</th><th>Niveau</th><th class="text-right">Expérience</th></tr></thead>
+                        <tbody>
+                            {% for guild in guilds %}
+                                <tr>
+                                    <td class="text-stone-500 tabular-nums">{{ loop.index }}</td>
+                                    <td class="font-medium text-stone-900 dark:text-stone-100">{{ guild.name }}</td>
+                                    <td class="tabular-nums">{{ guild.lvl }}</td>
+                                    <td class="text-right tabular-nums">{{ guild.xp|number_format(0, ',', ' ') }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="p-4">{{ ui.empty('Aucune guilde pour le moment.') }}</div>
+                {% endif %}
+
+            {% elseif tab == 'jobs' %}
+                {% if job is null %}
+                    <div class="p-4">{{ ui.empty('Choisis un métier pour voir ses meilleurs artisans.') }}</div>
+                {% elseif players %}
+                    <table class="table">
+                        <thead><tr><th class="w-12">#</th><th>Personnage</th><th>Niveau {{ jobs[job] }}</th><th>Progression</th><th>Autres métiers</th></tr></thead>
+                        <tbody>
+                            {% for player in players %}
+                                <tr>
+                                    <td class="text-stone-500 tabular-nums">{{ loop.index }}</td>
+                                    <td class="font-medium text-stone-900 dark:text-stone-100">{{ player.name }}</td>
+                                    <td class="tabular-nums">{{ player.level }}</td>
+                                    <td>{{ ui.progress(player.progress) }}</td>
+                                    <td class="text-xs text-stone-500 dark:text-stone-400">{{ player.otherJobs|join(', ') ?: '—' }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="p-4">{{ ui.empty('Aucun personnage n\'exerce ce métier.') }}</div>
+                {% endif %}
+
+            {% elseif tab == 'votes' %}
+                {% if voters %}
+                    <table class="table">
+                        <thead><tr><th class="w-12">#</th><th>Joueur</th><th class="text-right">Votes</th></tr></thead>
+                        <tbody>
+                            {% for voter in voters %}
+                                <tr>
+                                    <td class="text-stone-500 tabular-nums">{{ loop.index }}</td>
+                                    <td class="font-medium text-stone-900 dark:text-stone-100">{{ voter.pseudo ?: 'Joueur anonyme' }}</td>
+                                    <td class="text-right tabular-nums">{{ voter.votes }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="p-4">{{ ui.empty('Personne n\'a encore voté.') }}</div>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

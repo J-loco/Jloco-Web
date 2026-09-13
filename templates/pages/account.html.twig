@@ -1,0 +1,110 @@
+{% extends 'layout.html.twig' %}
+{% import 'components/ui.html.twig' as ui %}
+
+{% block title %}Mon compte{% endblock %}
+
+{% block content %}
+    <div class="flex items-center gap-4">
+        <img class="size-16 shrink-0 rounded-full border border-stone-200 dark:border-stone-700" src="{{ asset('assets/img/avatar.jpg') }}" alt="" width="64" height="64">
+        {{ ui.page_header('Bonjour ' ~ (account.pseudo ?: 'aventurier') ~ ' !', 'Gère ton compte, tes personnages et tes points boutique.') }}
+    </div>
+
+    <div class="grid gap-6 md:grid-cols-2">
+        <section class="card" aria-labelledby="account-info">
+            <div class="card-header"><h2 id="account-info" class="card-title">Informations</h2></div>
+            <dl class="divide-y divide-stone-100 text-sm dark:divide-stone-800">
+                {% set last_login = account.lastConnectionDate|legacy_date %}
+                {% for label, value in {
+                    'Pseudo': account.pseudo ?: 'Défini à la première connexion en jeu',
+                    'Inscription': account.dateRegister ?: '—',
+                    'Dernière connexion': last_login ? last_login|date_fr('datetime') : 'Jamais',
+                    'Votes': account.totalVotes,
+                } %}
+                    <div class="flex justify-between gap-4 px-5 py-2.5">
+                        <dt class="text-stone-500 dark:text-stone-400">{{ label }}</dt>
+                        <dd class="text-right font-medium text-stone-900 dark:text-stone-100">{{ value }}</dd>
+                    </div>
+                {% endfor %}
+                <div class="flex items-center justify-between gap-4 px-5 py-2.5">
+                    <dt class="text-stone-500 dark:text-stone-400">Points boutique</dt>
+                    <dd><span class="badge badge-brand text-sm tabular-nums">{{ account.points }}</span></dd>
+                </div>
+            </dl>
+        </section>
+
+        <section class="card" aria-labelledby="account-privacy">
+            <div class="card-header"><h2 id="account-privacy" class="card-title">Confidentialité</h2></div>
+            <ul class="divide-y divide-stone-100 text-sm dark:divide-stone-800">
+                {% for flag, item in {
+                    armory: {enabled: account.showOrHide, label: 'Visible dans l\'armurerie', help: 'Tes personnages apparaissent dans l\'armurerie du site.'},
+                    position: {enabled: account.showOrHidePos, label: 'Position visible', help: 'La zone où se trouvent tes personnages peut être affichée sur le site.'},
+                } %}
+                    <li class="flex items-center justify-between gap-4 px-5 py-3">
+                        <div>
+                            <p class="font-medium text-stone-900 dark:text-stone-100">{{ item.label }}</p>
+                            <p class="text-xs text-stone-500 dark:text-stone-400">{{ item.help }}</p>
+                        </div>
+                        <form method="post" action="{{ url('account_privacy', {flag: flag}) }}">
+                            {{ csrf_field() }}
+                            <button type="submit" role="switch" aria-checked="{{ item.enabled ? 'true' : 'false' }}" aria-label="{{ item.label }}"
+                                    class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors {{ item.enabled ? 'bg-brand-600 dark:bg-brand-500' : 'bg-stone-300 dark:bg-stone-700' }}">
+                                <span class="absolute top-0.5 size-5 rounded-full bg-white shadow transition-all {{ item.enabled ? 'left-5.5' : 'left-0.5' }}"></span>
+                            </button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        </section>
+    </div>
+
+    <section class="card overflow-hidden" aria-labelledby="account-characters">
+        <div class="card-header"><h2 id="account-characters" class="card-title">Mes personnages</h2></div>
+        {% if characters %}
+            <div class="table-wrap">
+                <table class="table">
+                    <thead><tr><th>Personnage</th><th>Niveau</th><th>Progression</th><th>Alignement</th></tr></thead>
+                    <tbody>
+                        {% for character in characters %}
+                            <tr>
+                                <td>
+                                    <span class="font-medium text-stone-900 dark:text-stone-100">{{ character.name }}</span>
+                                    <span class="block text-xs text-stone-500 dark:text-stone-400">{{ character.class|breed(character.sexe) }}</span>
+                                </td>
+                                <td class="tabular-nums">{{ character.level }}</td>
+                                <td>{{ ui.progress(character.xp|xp_progress(character.level)) }}</td>
+                                <td><span class="badge badge-neutral">{{ character.alignement|alignment }}</span></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="p-5">{{ ui.empty('Aucun personnage pour le moment : connecte-toi en jeu pour en créer un.') }}</div>
+        {% endif %}
+    </section>
+
+    <section id="password" class="card scroll-mt-24" aria-labelledby="account-password">
+        <div class="card-header"><h2 id="account-password" class="card-title">Changer de mot de passe</h2></div>
+        <form method="post" action="{{ url('account_password') }}" class="card-body grid gap-4 sm:grid-cols-2">
+            {{ csrf_field() }}
+            <div class="sm:col-span-2">
+                <label class="label" for="field-answer">Réponse à ta question : « {{ account.question }} »</label>
+                <input class="input" id="field-answer" name="answer" autocomplete="off" required>
+            </div>
+            {{ ui.field('password', 'Nouveau mot de passe', {type: 'password', autocomplete: 'new-password', maxlength: 50, hint: 'Au moins 6 caractères.'}) }}
+            {{ ui.field('password_confirm', 'Confirmation', {type: 'password', autocomplete: 'new-password', maxlength: 50}) }}
+            <div class="sm:col-span-2"><button type="submit" class="btn btn-primary">Changer le mot de passe</button></div>
+        </form>
+    </section>
+
+    {% if dedipass %}
+        <section id="points" class="card scroll-mt-24" aria-labelledby="account-points">
+            <div class="card-header"><h2 id="account-points" class="card-title">Recharger des points</h2></div>
+            <div class="card-body space-y-4">
+                <p class="text-sm text-stone-500 dark:text-stone-400">Les codes sont vérifiés auprès de Dedipass et chaque transaction est enregistrée. En cas de problème avec un code, contacte le support Dedipass.</p>
+                <div data-dedipass="{{ config.dedipassPublicKey }}"></div>
+            </div>
+            <script src="https://api.dedipass.com/v1/pay.js" defer></script>
+        </section>
+    {% endif %}
+{% endblock %}

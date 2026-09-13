@@ -1,6 +1,11 @@
-# The image only contains the PHP runtime and Composer dependencies; the application
-# code is bind-mounted by StarLoco-Game/docker-compose.yml.
-*
-!composer.json
-!composer.lock
-!docker/
+# Build context for the production image. The launcher payload (public/launcher/files) is large
+# and deployment-specific: mount it as a volume instead of baking it into the image.
+.git
+.gitattributes
+.gitignore
+CLAUDE.md
+.env
+vendor
+docs
+public/launcher/files
+public/assets/app.css

@@ -1,0 +1,59 @@
+{% extends 'layout_narrow.html.twig' %}
+{% import 'components/ui.html.twig' as ui %}
+{% set width = 'lg' %}
+
+{% block title %}Inscription{% endblock %}
+
+{% block content %}
+    <div class="card card-body space-y-6">
+        <div class="space-y-1 text-center">
+            <h1 class="text-xl font-bold">Créer un compte</h1>
+            <p class="text-sm text-stone-500 dark:text-stone-400">Ce compte te sert à te connecter en jeu et sur le site.</p>
+        </div>
+
+        {% if errors %}
+            {{ ui.alert('danger', 'Corrige les champs indiqués ci-dessous.', false) }}
+        {% endif %}
+
+        <form method="post" action="{{ url('register') }}" class="space-y-4" novalidate>
+            {{ csrf_field() }}
+
+            {{ ui.field('username', 'Nom de compte', {value: values.username, error: errors.username ?? null, autocomplete: 'username', maxlength: 30, hint: 'Identifiant de connexion, jamais affiché publiquement.', autofocus: true}) }}
+            {{ ui.field('email', 'Adresse email', {type: 'email', value: values.email, error: errors.email ?? null, autocomplete: 'email', maxlength: 100}) }}
+
+            <div class="grid gap-4 sm:grid-cols-2">
+                {{ ui.field('password', 'Mot de passe', {type: 'password', error: errors.password ?? null, autocomplete: 'new-password', maxlength: 50, hint: 'Au moins 6 caractères.'}) }}
+                {{ ui.field('password_confirm', 'Confirmation', {type: 'password', error: errors.password_confirm ?? null, autocomplete: 'new-password', maxlength: 50}) }}
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+                {{ ui.field('question', 'Question secrète', {value: values.question, error: errors.question ?? null, maxlength: 100, autocomplete: 'off'}) }}
+                {{ ui.field('answer', 'Réponse secrète', {error: errors.answer ?? null, maxlength: 100, autocomplete: 'off', hint: 'Sert à récupérer ton mot de passe.'}) }}
+            </div>
+
+            <div>
+                <label class="label" for="field-captcha">Code de sécurité</label>
+                <div class="flex items-center gap-3">
+                    <img id="captcha-image" class="h-9 w-[130px] shrink-0 rounded border border-stone-300 dark:border-stone-700" src="{{ url('captcha') }}" alt="Code de sécurité à recopier" width="130" height="36">
+                    <button type="button" class="btn btn-ghost btn-sm" data-captcha-refresh="captcha-image">Autre code</button>
+                </div>
+                <input class="input mt-2 uppercase" id="field-captcha" name="captcha" autocomplete="off" maxlength="6" required
+                       {% if errors.captcha is defined %}aria-invalid="true" aria-describedby="field-captcha-error"{% endif %}>
+                {% if errors.captcha is defined %}<p class="field-error" id="field-captcha-error">{{ errors.captcha }}</p>{% endif %}
+            </div>
+
+            <div>
+                <label class="flex items-start gap-2 text-sm">
+                    <input class="checkbox mt-0.5" type="checkbox" name="terms" value="1" required>
+                    <span>J'accepte les <a class="link" href="{{ url('terms') }}">conditions d'utilisation</a>.</span>
+                </label>
+                {% if errors.terms is defined %}<p class="field-error">{{ errors.terms }}</p>{% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-primary w-full">Créer mon compte</button>
+            <p class="text-center text-sm text-stone-500 dark:text-stone-400">
+                Déjà inscrit ? <a class="link" href="{{ url('login') }}">Connecte-toi</a>
+            </p>
+        </form>
+    </div>
+{% endblock %}

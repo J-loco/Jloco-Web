@@ -1,2 +1,4 @@
 /vendor/
 /.env
+# Built by the starloco_web_assets service / the production image
+/public/assets/app.css

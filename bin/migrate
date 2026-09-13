@@ -21,7 +21,7 @@ use StarLoco\Web\Database;
 use StarLoco\Web\Migration\Migrator;
 use StarLoco\Web\Migration\WebUserProvisioner;
 
-require __DIR__ . '/../include/autoload.php';
+require __DIR__ . '/../config/autoload.php';
 
 $log = static fn (string $message) => fwrite(STDOUT, '[migrate] ' . $message . PHP_EOL);
 $config = Config::fromEnvironment();

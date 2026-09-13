@@ -1,0 +1,75 @@
+{% extends 'layout.html.twig' %}
+{% import 'components/ui.html.twig' as ui %}
+
+{% block title %}Administration{% endblock %}
+
+{% block main %}
+    <div class="space-y-6">
+        {% include 'partials/flashes.html.twig' %}
+        {{ ui.page_header('Administration', 'Actualités du site (aussi affichées dans le launcher) et nouvelles en jeu.') }}
+
+        <div class="grid gap-6 lg:grid-cols-2">
+            <section class="card" aria-labelledby="admin-news">
+                <div class="card-header"><h2 id="admin-news" class="card-title">Actualités du site</h2></div>
+                <form method="post" action="{{ url('admin_news_create') }}" class="card-body space-y-4 border-b border-stone-200 dark:border-stone-800">
+                    {{ csrf_field() }}
+                    {{ ui.field('title', 'Titre', {maxlength: 100}) }}
+                    <div>
+                        <label class="label" for="news-content">Contenu</label>
+                        <textarea class="input min-h-32" id="news-content" name="content" required aria-describedby="news-content-hint"></textarea>
+                        <p class="hint" id="news-content-hint">HTML autorisé (liens, listes, images).</p>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Publier</button>
+                </form>
+                <ul class="divide-y divide-stone-100 text-sm dark:divide-stone-800">
+                    {% for item in news %}
+                        <li class="flex items-center justify-between gap-3 px-5 py-2.5">
+                            <div class="min-w-0">
+                                <p class="truncate font-medium text-stone-900 dark:text-stone-100">{{ item.title }}</p>
+                                <p class="text-xs text-stone-500 dark:text-stone-400">{{ item.date|date_fr('short') }}{% if item.author %} · {{ item.author }}{% endif %}</p>
+                            </div>
+                            <form method="post" action="{{ url('admin_news_delete', {id: item.id}) }}" data-confirm="Supprimer « {{ item.title }} » ?">
+                                {{ csrf_field() }}
+                                <button type="submit" class="btn btn-ghost btn-sm text-red-600 dark:text-red-400">Supprimer</button>
+                            </form>
+                        </li>
+                    {% else %}
+                        <li class="px-5 py-4 text-stone-500">Aucune actualité.</li>
+                    {% endfor %}
+                </ul>
+            </section>
+
+            <section id="game-news" class="card scroll-mt-24" aria-labelledby="admin-game-news">
+                <div class="card-header"><h2 id="admin-game-news" class="card-title">Nouvelles en jeu</h2></div>
+                <form method="post" action="{{ url('admin_game_news_create') }}" class="card-body space-y-4 border-b border-stone-200 dark:border-stone-800">
+                    {{ csrf_field() }}
+                    {{ ui.field('title', 'Titre', {maxlength: 50}) }}
+                    <div>
+                        <label class="label" for="game-news-type">Type</label>
+                        <select class="input" id="game-news-type" name="type" required>
+                            <option value="" disabled selected>Choisir…</option>
+                            {% for value, label in gameNewsTypes %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Publier</button>
+                </form>
+                <ul class="divide-y divide-stone-100 text-sm dark:divide-stone-800">
+                    {% for item in gameNews %}
+                        <li class="flex items-center justify-between gap-3 px-5 py-2.5">
+                            <div class="min-w-0">
+                                <p class="truncate font-medium text-stone-900 dark:text-stone-100">{{ item.title_fr }}</p>
+                                <p class="text-xs"><span class="badge badge-neutral">{{ gameNewsTypes[item.icon] ?? item.icon }}</span></p>
+                            </div>
+                            <form method="post" action="{{ url('admin_game_news_delete', {id: item.id}) }}" data-confirm="Supprimer « {{ item.title_fr }} » ?">
+                                {{ csrf_field() }}
+                                <button type="submit" class="btn btn-ghost btn-sm text-red-600 dark:text-red-400">Supprimer</button>
+                            </form>
+                        </li>
+                    {% else %}
+                        <li class="px-5 py-4 text-stone-500">Aucune nouvelle en jeu.</li>
+                    {% endfor %}
+                </ul>
+            </section>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,12 @@
+{# Opened by links with data-dialog-open="login-dialog"; without JavaScript those links go to /login. #}
+<dialog id="login-dialog" class="m-auto w-full max-w-sm rounded-xl bg-transparent p-0 backdrop:bg-stone-950/60" aria-labelledby="login-dialog-title">
+    <div class="card card-body space-y-5">
+        <div class="flex items-center justify-between">
+            <h2 id="login-dialog-title" class="text-lg font-semibold">Connexion</h2>
+            <button type="button" class="btn btn-ghost -mr-2 px-2" data-dialog-close aria-label="Fermer">
+                <svg class="size-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z"/></svg>
+            </button>
+        </div>
+        {% include 'partials/login_form.html.twig' with {prefix: 'dialog', username: ''} %}
+    </div>
+</dialog>

@@ -1,0 +1,47 @@
+{# Base layout: header, main column + sidebar, footer. Pages fill "content" (and optionally "title"). #}
+<!doctype html>
+<html lang="fr" class="h-full">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% set page_title = block('title') is defined ? block('title')|trim : '' %}
+    <title>{{ page_title ? page_title ~ ' · ' : '' }}{{ config.siteName }}</title>
+    <meta name="description" content="{% block description %}{{ config.siteName }} : serveur Dofus Retro 1.39. Inscription, classements, boutique et actualités.{% endblock %}">
+    <link rel="icon" href="{{ asset('assets/img/favicon.ico') }}">
+    <link rel="stylesheet" href="{{ asset('assets/app.css') }}">
+    <script nonce="{{ csp_nonce }}">
+        try {
+            const theme = localStorage.getItem('theme');
+            if (theme === 'dark' || (!theme && matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.classList.add('dark');
+            const background = localStorage.getItem('background');
+            if (background) document.documentElement.dataset.bg = background;
+        } catch { }
+    </script>
+    <script src="{{ asset('assets/app.js') }}" defer></script>
+</head>
+<body class="flex min-h-full flex-col">
+    <a href="#content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-white focus:px-3 focus:py-2 focus:text-sm focus:shadow">Aller au contenu</a>
+
+    {% include 'partials/header.html.twig' %}
+
+    <main id="content" class="container-page flex-1 py-8">
+        {% block main %}
+            <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
+                <div class="min-w-0 space-y-6">
+                    {% include 'partials/flashes.html.twig' %}
+                    {% block content %}{% endblock %}
+                </div>
+                <aside class="space-y-6" aria-label="Informations du serveur">
+                    {% include 'partials/sidebar.html.twig' %}
+                </aside>
+            </div>
+        {% endblock %}
+    </main>
+
+    {% include 'partials/footer.html.twig' %}
+
+    {% if current_account() is null %}
+        {% include 'partials/login_dialog.html.twig' %}
+    {% endif %}
+</body>
+</html>

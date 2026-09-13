@@ -72,16 +72,20 @@ Both servers use Apache MINA with a newline+NUL text codec. Packets are 2-charac
 - `models/` — reusable Lua model definitions.
 
 ### Web portal (`StarLoco-Web/`)
-PHP 8.3 app with a single front controller (`index.php`) routing via `?page=<name>`, restricted to the whitelist in `include/routes.php`. `include/bootstrap.php` loads config, helpers (`include/helpers.php`), session, DB globals and auth (`include/auth.php`). Classes live in `src/` (namespace `StarLoco\Web\`: `Config`, `Database`, `Captcha`, `Migration\*`), dependencies via Composer. Settings come from env (`src/Config.php`; `config()` / `database()` helpers, legacy constants kept as aliases). Pages live in `pages/` and use the globals `$login` (login DB) and `$jiva` (game DB); rows are objects by default and prepared statements are native (errors surface at `prepare()`).
+PHP 8.3 app (Composer: FastRoute, Twig, phpdotenv) served from `public/` at `http://127.0.0.1/dofus/`. Request flow: `public/index.php` → `src/Kernel.php` (legacy `?page=` 301 redirects, session, remember-me, routing, CSRF, error pages, CSP/security headers) → controller in `src/Controller/` → repositories (`src/Repository/`, all page SQL) and services (`src/Service/`) → Twig template (`templates/`). Routes are named in `config/routes.php` (`url('name', params)` in Twig and controllers); services are autowired by `src/Container.php` (factories in `config/container.php`). Settings: `src/Config.php`, from env (documented in `StarLoco-Web/.env.example`; compose passes `WEB_*` variables from `StarLoco-Game/.env`).
 
-Docker (from `StarLoco-Game/`): `docker compose build starloco_web && docker compose up -d starloco_web`. Build only the web image: `starloco_login` currently also has `build: ../StarLoco-Web`. The web container connects as the least-privilege `starloco_web` DB user; the one-off `starloco_web_migrate` service (root) runs `bin/migrate`, which applies `StarLoco-Web/migrations/*.sql` and provisions that user (grants in `src/Migration/WebUserProvisioner.php`: add a table there when a page starts writing to it). PHP errors: `docker compose logs starloco_web`.
+URL contracts that must not move: `public/lang/` (Dofus client data server) and `public/launcher/` (`status.php`, `news.php`, `manifest.json`, `files/`, see `StarLoco-Web/docs/launcher-endpoints.md`).
 
-A staged refactor is in progress — plan, audit and status in `StarLoco-Web/docs/refactor/` (Phases 0 security and 1 foundation done; next: Phase 2 real URL paths + Tailwind). Rules for any page code until Phase 2:
-- SQL only with `?` placeholders; never concatenate values.
-- Wrap printed values in `e()`; every POST form includes `<?= csrf_field() ?>` (index.php rejects POSTs without it).
-- Build links with `url('page', [...])`, never a literal `?page=` (Phase 2 switches `url()` to real paths).
-- POST handlers end with `flash()` + `redirect()`; use `require_login()` / `is_admin()` for access checks.
-- XP progress comes from `class/Experience.class.php` (mirror of `StarLoco-Game/scripts/data/Experience.lua`; the `experience` SQL table no longer exists).
+Docker (from `StarLoco-Game/`): `docker compose build starloco_web starloco_web_assets && docker compose up -d starloco_web`. Build only the web images: `starloco_login` currently also has `build: ../StarLoco-Web`. One-off services run first: `starloco_web_migrate` (root; `bin/migrate` applies `StarLoco-Web/migrations/*.sql` and provisions the least-privilege `starloco_web` DB user, grants in `src/Migration/WebUserProvisioner.php`) and `starloco_web_assets` (Tailwind standalone CLI → `public/assets/app.css`, git-ignored; re-run after editing templates or `assets/css/app.css`). PHP errors: `docker compose logs starloco_web`. Dockerfile targets: `runtime` (bind-mounted code), `tailwind`, `production` (self-contained).
+
+Rules for portal code (plan and history in `StarLoco-Web/docs/refactor/`; Phases 0-2 done, Phase 3 planned):
+- SQL only in repositories (plus `Security/Throttle`, `Security/RememberMe`), always with `?` placeholders. Prepared statements are native: bad SQL fails at `prepare()`.
+- Legacy schemas: login-DB text columns are latin1, game names utf8mb3. Check user input with `Support\Text::fitsLatin1()` before storing or comparing it against latin1 columns (otherwise MariaDB throws "Illegal mix of collations" → 500). Request input is already UTF-8-scrubbed.
+- Controllers return a `Response`; POST actions end with `flash()` + redirect (Post/Redirect/Get). Every POST route needs `{{ csrf_field() }}` in its form unless declared `csrf: false` in `config/routes.php` (only the Dedipass callback).
+- Templates auto-escape; `|raw` only for admin-authored news content. Never display `world_accounts.account` (login credential): use `pseudo`.
+- Inline scripts need `nonce="{{ csp_nonce }}"`; no JS framework (the CSP forbids `unsafe-eval`). Interactivity lives in `public/assets/app.js`.
+- Styles: Tailwind utilities + components in `assets/css/app.css`; UI macros in `templates/components/ui.html.twig`. Theme images (backgrounds, server icons, vote banner, avatar) are in `public/assets/img/`.
+- XP progress comes from `src/Game/Experience.php` (mirror of `StarLoco-Game/scripts/data/Experience.lua`; the `experience` SQL table no longer exists).
 - Schema changes: add a re-runnable `StarLoco-Web/migrations/NNN_name.sql` (first line `-- database: game` to target the game DB), never `StarLoco-Game/db-init/`.
 
 ### Client SWF mods (`StarLoco-Client/`)

@@ -1,0 +1,21 @@
+{# Standalone on purpose: it must render even when the database or the session is unavailable. #}
+<!doctype html>
+<html lang="fr" class="h-full">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Erreur · {{ config.siteName }}</title>
+    <link rel="stylesheet" href="{{ asset('assets/app.css') }}">
+</head>
+<body class="grid min-h-full place-items-center p-6">
+    <div class="card card-body w-full max-w-md space-y-4 text-center">
+        <p class="text-5xl font-bold text-brand-600 dark:text-brand-400">500</p>
+        <h1 class="text-xl font-bold">Une erreur est survenue</h1>
+        <p class="text-sm text-stone-500 dark:text-stone-400">Le problème a été enregistré. Réessaie dans quelques instants.</p>
+        <a class="btn btn-primary" href="{{ config.appUrl }}">Retour à l'accueil</a>
+        {% if error %}
+            <pre class="overflow-x-auto rounded-lg bg-stone-900 p-3 text-left text-xs text-red-300">{{ error }}</pre>
+        {% endif %}
+    </div>
+</body>
+</html>

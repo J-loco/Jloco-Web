@@ -5,8 +5,11 @@
 - [ ] **Static analysis**: PHPStan level 6 (raise over time) on `src/`.
 - [ ] **Code style**: php-cs-fixer, PSR-12.
 - [ ] **Automated upgrades**: Rector (PHP 8.3 set) for any code left outside `src/`.
-- [ ] **Unit tests (PHPUnit)**: `Experience`, `ShopService` (insufficient points, concurrent
-      purchase, refund), `AuthService` (throttle, remember-me rotation), `Router` legacy redirects.
+- [ ] **Unit tests (PHPUnit)**: `Experience`, `ItemEffects`, `Support\Text`, `ShopService` (insufficient
+      points, concurrent purchase, refund), `AuthService` (validation, throttle, remember-me rotation),
+      `Router` URL generation and `LegacyUrls` redirects.
+- [ ] **Typed models**: repositories return `stdClass` rows today; introduce readonly DTOs
+      (`Account`, `Character`, `ShopItem`…) once PHPStan is in place.
 - [ ] **Integration tests**: repositories against a MariaDB service container seeded from
       `StarLoco-Game/db-init`.
 - [ ] **CI**: lint + PHPStan + tests on every push.
@@ -18,5 +21,7 @@
       3. After a grace period, force a reset for accounts still on the legacy hash.
 - [ ] **Replace secret question/answer reset** with email reset links (token table, expiry),
       once outgoing mail is configured.
-- [ ] **Clean-up of the theme**: remove old third-party embeds (Aestia Facebook/Twitter), hard-coded
-      server ids/names (read from `world_servers`), Flash-only item previews.
+- [ ] **Item images**: the shop has no pictures since Flash previews were removed; export item and guild
+      emblem sprites from the client data to static images.
+- [ ] **Shop servers**: `website_shop_objects.server` is a game-DB index, not a `world_servers` id
+      (audit D13); support several game databases in `ShopService::DELIVERABLE_SERVERS` / config.

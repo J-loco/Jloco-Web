@@ -1,0 +1,23 @@
+{# Shared by /login and the login dialog. Expects: prefix (unique id prefix), username. #}
+<form method="post" action="{{ url('login') }}" class="space-y-4">
+    {{ csrf_field() }}
+    <div>
+        <label class="label" for="{{ prefix }}-username">Nom de compte</label>
+        <input class="input" id="{{ prefix }}-username" name="username" value="{{ username }}" autocomplete="username" required>
+    </div>
+    <div>
+        <div class="flex items-baseline justify-between">
+            <label class="label" for="{{ prefix }}-password">Mot de passe</label>
+            <a class="link text-xs" href="{{ url('password_reset') }}">Oublié ?</a>
+        </div>
+        <input class="input" id="{{ prefix }}-password" name="password" type="password" autocomplete="current-password" required>
+    </div>
+    <label class="flex items-center gap-2 text-sm">
+        <input class="checkbox" type="checkbox" name="remember" value="1">
+        Se souvenir de moi 7 jours
+    </label>
+    <button type="submit" class="btn btn-primary w-full">Se connecter</button>
+    <p class="text-center text-sm text-stone-500 dark:text-stone-400">
+        Pas encore de compte ? <a class="link" href="{{ url('register') }}">Inscris-toi</a>
+    </p>
+</form>

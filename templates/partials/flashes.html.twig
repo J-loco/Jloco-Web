@@ -1,0 +1,4 @@
+{% import 'components/ui.html.twig' as ui %}
+{% for flash in flashes() %}
+    {{ ui.alert(flash.type, flash.message) }}
+{% endfor %}

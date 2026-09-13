@@ -1,0 +1,9 @@
+<footer class="mt-auto border-t border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900">
+    <div class="container-page flex flex-col gap-3 py-6 text-xs text-stone-500 sm:flex-row sm:items-center sm:justify-between dark:text-stone-400">
+        <p>© {{ 'now'|date('Y') }} {{ config.siteName }} · Dofus® est une marque déposée d'Ankama Games. Ce site n'est ni affilié ni approuvé par Ankama.</p>
+        <nav class="flex gap-4" aria-label="Liens de pied de page">
+            <a class="hover:text-stone-800 dark:hover:text-stone-200" href="{{ url('terms') }}">Conditions d'utilisation</a>
+            <a class="hover:text-stone-800 dark:hover:text-stone-200" href="{{ url('forum_news') }}">Nouvelles du forum</a>
+        </nav>
+    </div>
+</footer>

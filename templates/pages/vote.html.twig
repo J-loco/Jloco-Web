@@ -1,0 +1,38 @@
+{% extends 'layout.html.twig' %}
+{% import 'components/ui.html.twig' as ui %}
+
+{% block title %}Voter{% endblock %}
+
+{% block content %}
+    {{ ui.page_header('Voter pour ' ~ config.siteName, 'Chaque vote aide le serveur à gagner en visibilité.') }}
+
+    <div class="card card-body space-y-5">
+        <div class="flex items-center gap-4">
+            <span class="grid size-12 shrink-0 place-items-center rounded-xl bg-brand-100 text-2xl font-bold text-brand-700 dark:bg-brand-500/15 dark:text-brand-300">+{{ config.votePoints }}</span>
+            <p class="text-sm">Tu gagnes <strong>{{ config.votePoints }} points boutique</strong> par vote, toutes les 3 heures. Les points sont crédités quand tu cliques sur le bouton ci-dessous, puis tu es redirigé vers le site de vote.</p>
+        </div>
+
+        {% if current_account() %}
+            {% if wait > 0 %}
+                {{ ui.alert('info', 'Tu as déjà voté récemment. Prochain vote possible dans ' ~ wait|duration ~ '.', false) }}
+                <a class="inline-block rounded-lg border border-stone-200 bg-white p-2 dark:border-stone-700" href="{{ config.voteUrl }}" rel="noopener" aria-label="Voter sur RPG Paradize sans gagner de points">
+                    <img src="{{ asset('assets/img/rpg.jpg') }}" alt="" width="300" height="50">
+                </a>
+            {% else %}
+                <form method="post" action="{{ url('vote_submit') }}" class="flex flex-wrap items-center gap-4">
+                    {{ csrf_field() }}
+                    <button type="submit" class="cursor-pointer rounded-lg border border-stone-200 bg-white p-2 shadow-sm transition hover:border-brand-400 hover:shadow dark:border-stone-700" aria-label="Voter sur RPG Paradize et gagner {{ config.votePoints }} points">
+                        <img src="{{ asset('assets/img/rpg.jpg') }}" alt="" width="300" height="50">
+                    </button>
+                    <span class="text-sm text-stone-500 dark:text-stone-400">Clique sur la bannière pour voter.</span>
+                </form>
+            {% endif %}
+        {% else %}
+            {{ ui.alert('info', 'Connecte-toi pour que ton vote te rapporte des points.', false) }}
+            <div class="flex flex-wrap gap-3">
+                <a class="btn btn-primary" href="{{ url('login') }}" data-dialog-open="login-dialog">Se connecter</a>
+                <a class="btn btn-secondary" href="{{ config.voteUrl }}" rel="noopener">Voter sans compte</a>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

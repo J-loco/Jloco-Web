@@ -1,0 +1,32 @@
+{% extends 'layout.html.twig' %}
+{% import 'components/ui.html.twig' as ui %}
+
+{% block title %}Conditions d'utilisation{% endblock %}
+
+{# Generic starting point: the server administrators should adapt this text to their rules. #}
+{% block content %}
+    {{ ui.page_header('Conditions générales d\'utilisation') }}
+
+    <div class="card card-body space-y-6 text-sm leading-relaxed">
+        <section class="space-y-2">
+            <h2 class="font-semibold">Projet non officiel</h2>
+            <p>{{ config.siteName }} est un projet communautaire et non commercial. Dofus® est une marque déposée d'Ankama Games ; ce serveur n'est ni affilié, ni approuvé par Ankama.</p>
+        </section>
+        <section class="space-y-2">
+            <h2 class="font-semibold">Ton compte</h2>
+            <p>Tu es responsable de la confidentialité de ton mot de passe et de ta réponse secrète. Ne les communique à personne : l'équipe ne te les demandera jamais.</p>
+        </section>
+        <section class="space-y-2">
+            <h2 class="font-semibold">Comportement</h2>
+            <p>Le respect des autres joueurs est obligatoire. La triche, l'exploitation de bugs et l'utilisation de logiciels tiers peuvent entraîner la suspension du compte.</p>
+        </section>
+        <section class="space-y-2">
+            <h2 class="font-semibold">Points boutique</h2>
+            <p>Les points gagnés ou achetés n'ont aucune valeur monétaire, ne sont pas remboursables et peuvent être modifiés en cas d'abus.</p>
+        </section>
+        <section class="space-y-2">
+            <h2 class="font-semibold">Données personnelles</h2>
+            <p>Le site conserve ton nom de compte, ton adresse email et l'adresse IP utilisée pour les votes et la sécurité (protection contre les tentatives de connexion répétées). Elles ne sont utilisées que pour le fonctionnement du serveur.</p>
+        </section>
+    </div>
+{% endblock %}

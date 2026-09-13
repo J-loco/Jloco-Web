@@ -1,0 +1,15 @@
+{% extends 'layout_narrow.html.twig' %}
+{% import 'components/ui.html.twig' as ui %}
+
+{% block title %}Connexion{% endblock %}
+
+{% block content %}
+    <div class="card card-body space-y-5">
+        <div class="space-y-1 text-center">
+            <h1 class="text-xl font-bold">Connexion</h1>
+            <p class="text-sm text-stone-500 dark:text-stone-400">Avec les identifiants de ton compte de jeu.</p>
+        </div>
+        {% if error %}{{ ui.alert('danger', error, false) }}{% endif %}
+        {% include 'partials/login_form.html.twig' with {prefix: 'page', username: username} %}
+    </div>
+{% endblock %}

@@ -1,0 +1,84 @@
+{# Reusable UI pieces. Import with: {% import 'components/ui.html.twig' as ui %} #}
+
+{% macro alert(type, message, dismissible = true) %}
+    {% set styles = {
+        success: 'border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200',
+        info: 'border-sky-200 bg-sky-50 text-sky-900 dark:border-sky-500/30 dark:bg-sky-500/10 dark:text-sky-200',
+        warning: 'border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200',
+        danger: 'border-red-200 bg-red-50 text-red-900 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200',
+    } %}
+    <div class="flex items-start gap-3 rounded-lg border px-4 py-3 text-sm {{ styles[type] ?? styles.info }}"
+         role="{{ type == 'danger' ? 'alert' : 'status' }}" {% if dismissible %}data-dismissible{% endif %}>
+        <p class="flex-1">{{ message }}</p>
+        {% if dismissible %}
+            <button type="button" class="-m-1 rounded p-1 opacity-60 hover:opacity-100" data-dismiss aria-label="Fermer">
+                <svg class="size-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z"/></svg>
+            </button>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% macro page_header(title, subtitle = null) %}
+    <header class="space-y-1">
+        <h1 class="font-display text-4xl leading-none tracking-wide">{{ title }}</h1>
+        {% if subtitle %}<p class="text-sm text-stone-500 dark:text-stone-400">{{ subtitle }}</p>{% endif %}
+    </header>
+{% endmacro %}
+
+{% macro empty(message) %}
+    <div class="rounded-xl border border-dashed border-stone-300 px-6 py-10 text-center text-sm text-stone-500 dark:border-stone-700 dark:text-stone-400">
+        {{ message }}
+    </div>
+{% endmacro %}
+
+{# A text/email/password input with its label and error. #}
+{% macro field(name, label, options = {}) %}
+    {% set id = 'field-' ~ name %}
+    {% set error = options.error ?? null %}
+    <div>
+        <label class="label" for="{{ id }}">{{ label }}</label>
+        <input class="input" id="{{ id }}" name="{{ name }}" type="{{ options.type ?? 'text' }}"
+               value="{{ options.value ?? '' }}"
+               {% if options.autocomplete is defined %}autocomplete="{{ options.autocomplete }}"{% endif %}
+               {% if options.maxlength is defined %}maxlength="{{ options.maxlength }}"{% endif %}
+               {% if options.required ?? true %}required{% endif %}
+               {% if options.autofocus ?? false %}autofocus{% endif %}
+               {% if error %}aria-invalid="true" aria-describedby="{{ id }}-error"{% elseif options.hint is defined %}aria-describedby="{{ id }}-hint"{% endif %}>
+        {% if error %}
+            <p class="field-error" id="{{ id }}-error">{{ error }}</p>
+        {% elseif options.hint is defined %}
+            <p class="hint" id="{{ id }}-hint">{{ options.hint }}</p>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% macro progress(percent) %}
+    <div class="flex items-center gap-2" title="{{ percent }} %">
+        <div class="h-1.5 w-20 overflow-hidden rounded-full bg-stone-200 dark:bg-stone-800" role="progressbar" aria-valuenow="{{ percent }}" aria-valuemin="0" aria-valuemax="100">
+            <div class="h-full rounded-full bg-brand-500" style="width: {{ percent }}%"></div>
+        </div>
+        <span class="text-xs text-stone-500 tabular-nums dark:text-stone-400">{{ percent }} %</span>
+    </div>
+{% endmacro %}
+
+{# Previous / next pagination for a route taking a "p" query parameter. #}
+{% macro pagination(route, page, pages, params = {}) %}
+    {% if pages > 1 %}
+        <nav class="flex items-center justify-between gap-3" aria-label="Pagination">
+            {% if page > 1 %}
+                <a class="btn btn-secondary" href="{{ url(route, params|merge({p: page - 1})) }}" rel="prev">← Plus récentes</a>
+            {% else %}<span></span>{% endif %}
+            <span class="text-sm text-stone-500 tabular-nums dark:text-stone-400">Page {{ page }} sur {{ pages }}</span>
+            {% if page < pages %}
+                <a class="btn btn-secondary" href="{{ url(route, params|merge({p: page + 1})) }}" rel="next">Plus anciennes →</a>
+            {% else %}<span></span>{% endif %}
+        </nav>
+    {% endif %}
+{% endmacro %}
+
+{% macro status_dot(online) %}
+    <span class="relative flex size-2.5" aria-hidden="true">
+        {% if online %}<span class="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-60 motion-reduce:animate-none"></span>{% endif %}
+        <span class="relative inline-flex size-2.5 rounded-full {{ online ? 'bg-emerald-500' : 'bg-red-500' }}"></span>
+    </span>
+{% endmacro %}

@@ -1,0 +1,54 @@
+{% extends 'layout.html.twig' %}
+{% import 'components/ui.html.twig' as ui %}
+
+{% block title %}{{ item.name }} · Boutique{% endblock %}
+
+{% block content %}
+    {% set balance = current_account().points %}
+    {% set effects = item.effects|item_effects %}
+
+    <nav class="text-sm" aria-label="Fil d'Ariane">
+        <a class="link" href="{{ url('shop_category', {server: server, category: item.category}) }}">← {{ item.category_name ?: 'Boutique' }}</a>
+    </nav>
+
+    <article class="card">
+        <div class="card-body space-y-5">
+            <header class="flex flex-wrap items-start justify-between gap-3">
+                <div class="space-y-1">
+                    <h1 class="text-2xl font-bold tracking-tight">{{ item.name }}</h1>
+                    <p class="text-sm text-stone-500 dark:text-stone-400">{{ item.category_name }} · niveau {{ item.level }}{% if serverName %} · {{ serverName }}{% endif %}</p>
+                </div>
+                {% if item.jp %}<span class="badge badge-success">Jet parfait</span>{% endif %}
+            </header>
+
+            {% if item.description %}<p class="text-sm">{{ item.description }}</p>{% endif %}
+
+            {% if effects %}
+                <div>
+                    <h2 class="mb-2 text-sm font-semibold">Effets</h2>
+                    <ul class="grid gap-1 text-sm sm:grid-cols-2">
+                        {% for effect in effects %}<li class="rounded-md bg-stone-50 px-3 py-1.5 dark:bg-stone-800/60">{{ effect }}</li>{% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-4 border-t border-stone-200 px-5 py-4 dark:border-stone-800">
+            <div class="text-sm">
+                <p><span class="text-2xl font-bold tabular-nums">{{ item.price }}</span> points</p>
+                <p class="text-stone-500 dark:text-stone-400">Ton solde : {{ balance }} points</p>
+            </div>
+            {% if balance >= item.price %}
+                <form method="post" action="{{ url('shop_buy', {server: server, template: item.template}) }}">
+                    {{ csrf_field() }}
+                    <button type="submit" class="btn btn-primary">Acheter pour {{ item.price }} points</button>
+                </form>
+            {% else %}
+                <div class="text-right">
+                    <button type="button" class="btn btn-primary" disabled>Acheter</button>
+                    <p class="mt-1 text-xs text-stone-500 dark:text-stone-400">Il te manque {{ item.price - balance }} points. <a class="link" href="{{ url('vote') }}">Voter</a></p>
+                </div>
+            {% endif %}
+        </div>
+    </article>
+{% endblock %}

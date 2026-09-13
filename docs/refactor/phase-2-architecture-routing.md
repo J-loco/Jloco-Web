@@ -1,105 +1,119 @@
 # Phase 2 — Layered architecture, real URL paths, Tailwind UI
 
-Scope: replace `?page=<name>` with real paths, split every page into controller / repository /
-template, and rebuild the templates with Tailwind CSS instead of Bootstrap 3. Migrated page by page.
+**Status: done (2026-09-13).** The legacy `?page=` portal is gone; every page is a controller +
+repository + Twig template, styled with Tailwind, served from `public/` at real paths.
 
-## Target layout
+## Layout
 
 ```
 StarLoco-Web/
-├─ public/                 ← Apache document root for /dofus (the only web-exposed folder)
-│  ├─ index.php            ← front controller
-│  ├─ .htaccess            ← rewrite everything that is not a file to index.php
-│  ├─ css/ img/ plugins/   ← static assets (moved, same relative URLs)
-│  ├─ lang/                ← Flash client data (URL must not change)
-│  └─ launcher/            ← status.php, news.php, files/ (URLs must not change)
+├─ public/                   ← the only web-served folder (Apache Alias /dofus)
+│  ├─ index.php              ← front controller (FallbackResource)
+│  ├─ assets/                ← app.css (built, git-ignored), app.js, img/, fonts/
+│  ├─ lang/                  ← Dofus client data: URL contract, untouched
+│  └─ launcher/              ← status.php, news.php, manifest.json, files/: URL contract (docs/launcher-endpoints.md)
+├─ config/
+│  ├─ autoload.php           ← Composer + src/ + optional .env
+│  ├─ container.php          ← service wiring (everything else is autowired)
+│  └─ routes.php             ← every route, by name
 ├─ src/
-│  ├─ Http/Router.php      ← FastRoute wrapper, base-path aware (/dofus)
-│  ├─ Controller/          ← HomeController, LadderController, ShopController, AccountController…
-│  ├─ Repository/          ← AccountRepository, PlayerRepository, GuildRepository, ShopRepository,
-│  │                         NewsRepository, DropRepository, ServerRepository  (all SQL lives here)
-│  ├─ Service/             ← AuthService, ShopService (transactions), VoteService, Experience
-│  └─ Security/            ← Csrf, Throttle, RememberMe (moved from include/ in Phase 0)
-├─ templates/              ← Twig: layout.html.twig, partials/sidebar, pages/*.html.twig
-├─ migrations/
-├─ config/                 ← routes.php, services wiring
+│  ├─ Kernel.php             ← legacy redirect → session → remember-me → routing → CSRF → controller; errors; security headers
+│  ├─ Container.php          ← shared instances + constructor autowiring
+│  ├─ Http/                  ← Request, Response, Route, Router (FastRoute + URL generation), LegacyUrls (301s)
+│  ├─ Controller/            ← Home, Page, Ladder, Drop, Auth, Account, Vote, Shop, Admin
+│  ├─ Repository/            ← Account, Player, Guild, News, Shop, Server, Game (all page SQL)
+│  ├─ Service/               ← AuthService, ShopService, VoteService, ServerStatus, Dedipass, ForumFeed, Sidebar
+│  ├─ Security/              ← Session (+ flash), Csrf, Throttle, RememberMe
+│  ├─ Game/                  ← Experience, Character (breeds, alignments), ItemEffects
+│  ├─ View/                  ← View, TwigFactory, AppExtension (url, asset, csrf_field, filters)
+│  ├─ Support/Text.php       ← charset guards for the latin1 / utf8mb3 legacy schemas
+│  ├─ Migration/             ← Migrator, WebUserProvisioner (bin/migrate)
+│  ├─ Config.php, Database.php, Captcha.php
+├─ templates/                ← layout, layout_narrow, partials/, components/ui.html.twig, pages/, errors/
+├─ assets/css/app.css        ← Tailwind source (design tokens + components)
+├─ migrations/, bin/migrate, docker/, Dockerfile
 └─ docs/
 ```
 
-Libraries: `nikic/fast-route`, `twig/twig` (auto-escaping on), `vlucas/phpdotenv`.
+Libraries: `nikic/fast-route`, `twig/twig` (auto-escaping), `vlucas/phpdotenv`. SQL lives in
+`src/Repository/`, plus the two security stores (`Security/Throttle`, `Security/RememberMe`) and the
+migration runner.
 
-## Front-end: Tailwind instead of Bootstrap
-
-The current theme is Bootstrap 3 + jQuery 1.11 + a dozen jQuery plugins (bxslider, jcarousel,
-pace, notificationFx, style switcher). Since every page is rewritten as a Twig template in this
-phase anyway, the UI is rebuilt with Tailwind at the same time rather than restyled twice.
-
-- **Build**: Tailwind CSS v4 standalone CLI (no Node runtime needed in production). A Docker
-  multi-stage build scans `templates/**/*.twig` and outputs `public/assets/app.css` (minified,
-  only the classes used). Local work: `tailwindcss --watch` with the same standalone binary.
-  No Play CDN in production (it compiles in the browser and conflicts with a strict CSP).
-- **Design tokens** in `assets/css/app.css` (`@theme`): brand colors, fonts, radius, so the look
-  is defined in one place; dark mode via `prefers-color-scheme` + a toggle.
-- **Components** as Twig macros/partials (`templates/components/`): button, alert/flash, card,
-  table, tabs, modal, form field, pagination, server-status badge. Pages compose these instead of
-  repeating markup.
-- **JavaScript**: replace jQuery + Bootstrap JS with Alpine.js (~15 KB) for the few interactive
-  parts: login/register modals, ladder tabs, dropdown menu, flash auto-dismiss. Remove bxslider,
-  jcarousel, pace, notificationFx, the style switcher and the Facebook/Twitter embeds.
-- **Flash item previews** (`<object type="application/x-shockwave-flash">` in shop/ladder) do not
-  render in any current browser: replace with static item/emblem images where available.
-- **Accessibility**: real `<label for>`, focus styles, `aria-*` on tabs/modals, responsive tables.
-- The Flash *client* data under `lang/` and `img/dofus/` is untouched (used by the game client).
-
-Pages migrated to the new layout keep working next to legacy pages during the transition: the
-legacy layout keeps Bootstrap until its last page is migrated (step 7), then `plugins/` and `css/`
-are deleted.
-
-## URL map
+## URL map (implemented)
 
 | Legacy | New path | Method |
 |---|---|---|
 | `?page=index`, `?num=N` | `/`, `/?p=N` | GET |
 | `?page=join` | `/join` | GET |
-| `?page=ladder` | `/ladder` (tabs: `/ladder/pvp`, `/ladder/guilds`, `/ladder/jobs/{jobId}`, `/ladder/votes`) | GET |
-| `?page=shop&server=S&category=C` | `/shop`, `/shop/{server}`, `/shop/{server}/{category}` | GET |
-| `?page=buy&template=T&server=S` | `/shop/{server}/items/{template}` (confirm) | GET / POST |
-| `?page=viewdrop` | `/drops?monster=…` / `/drops?item=…` (GET search, shareable) | GET |
-| `?page=vote` | `/vote` | GET / POST |
-| `?page=signin` | `/login` | GET / POST |
-| `?page=signin&ok=2` | `/logout` | POST |
-| `?page=register` | `/register` | GET / POST |
-| `?page=password` | `/password/reset` | GET / POST |
-| `?page=profile` | `/account` | GET / POST |
-| `?page=administration` | `/admin` | GET / POST |
+| `?page=cgu` (never existed) | `/terms` | GET |
 | `?page=news` | `/forum-news` | GET |
-| `?page=cgu` | `/terms` | GET |
-| `launcher/status.php`, `launcher/news.php`, `lang/*`, `img/dofus/*` | unchanged | GET |
+| `?page=ladder` | `/ladder`, `/ladder/pvp`, `/ladder/guilds`, `/ladder/jobs`, `/ladder/jobs/{job}`, `/ladder/votes` | GET |
+| `?page=viewdrop` | `/drops?by=monster\|item&q=…` | GET |
+| `?page=signin` | `/login` | GET / POST |
+| `?page=signin&ok=2` | `/logout` | POST only |
+| `?page=register` | `/register` (+ `/captcha.png`) | GET / POST |
+| `?page=password` | `/password/reset` | GET / POST |
+| `?page=profile` | `/account`, `/account/privacy/{armory\|position}`, `/account/password` (POST); Dedipass posts to `/account` | GET / POST |
+| `?page=vote` | `/vote` | GET / POST |
+| `?page=shop&server=S&category=C` | `/shop`, `/shop/{server}`, `/shop/{server}/{category}` | GET |
+| `?page=buy&template=T&server=S` | `/shop/{server}/items/{template}` | GET / POST |
+| `?page=administration` | `/admin`, `/admin/news`, `/admin/news/{id}/delete`, `/admin/game-news`, `/admin/game-news/{id}/delete` | GET / POST |
+| `lang/*`, `launcher/*` | unchanged | GET |
 
-- **Legacy redirects**: any request with `?page=` gets a `301` to the new path (query parameters
-  mapped as above), so bookmarks, forum links and search engines keep working.
-- **Base path**: the app is served under `/dofus`; the router strips `parse_url(APP_URL, PHP_URL_PATH)`.
-- **Assets**: templates reference assets with absolute URLs built from `APP_URL`
-  (`asset('css/style.css')`), so nested paths like `/shop/601/3` do not break relative links.
-- **Forms** use Post/Redirect/Get: POST handlers redirect with a flash message instead of rendering,
-  so refresh never re-submits (fixes the "profile toggle flips twice" class of bugs).
+Every legacy URL above answers `301` to its new path (`src/Http/LegacyUrls.php`); unknown pages 404.
 
-## Migration order (one PR each)
+## Front-end
 
-1. Router + `public/` + legacy redirect + Tailwind build + new layout and components. Pages not
-   migrated yet are still rendered by the old `pages/*.php` inside the legacy Bootstrap layout,
-   through a `LegacyPageController`. **Real paths work from this step on.**
-2. Read-only pages: home, join, ladder, drops, forum-news, terms.
-3. Auth: login, logout, register, password reset (AuthService).
-4. Account (profile) and vote.
-5. Shop and buy (ShopService, transactions).
-6. Admin.
-7. Delete `pages/`, `include/`, `class/`, `configuration/`, the `url()` shim and `?page=` handling
-   (keep only the 301 redirect).
+- **Tailwind v4.3** standalone CLI, no Node: the `starloco_web_assets` compose service (Dockerfile
+  target `tailwind`) builds `public/assets/app.css`; the `production` target builds it into the image.
+  Tokens (brand amber palette, Bebas Neue display font) and components (`.card`, `.btn-*`, `.input`,
+  `.table`, `.tabs`, `.badge`…) are in `assets/css/app.css`; Twig macros in `templates/components/ui.html.twig`.
+- **No Alpine.js** (deviation from the first plan): the standard Alpine build evaluates expressions with
+  `new Function`, which would force `'unsafe-eval'` into the CSP. Native `<dialog>` (login),
+  `<details>` (menus) and ~70 lines of `public/assets/app.js` (theme, background, dialogs, dismiss,
+  captcha refresh, delete confirmation) keep `script-src 'self' 'nonce-…'`. Everything works without JS.
+- **Images of the original theme kept** in `public/assets/img/`: page background patterns (default
+  `shattered`, `dark_geometric` in dark mode, the old style switcher's choices in the "Apparence" menu,
+  saved per browser), server icons in the sidebar, the RPG Paradize banner as the vote button, the
+  default avatar on the account page, Bebas Neue for titles. `slideshow/1-4.jpg` are blank placeholders
+  (the old slideshow was commented out) and are not displayed.
+- Dropped: Bootstrap 3, jQuery and its plugins, Facebook/Twitter embeds of a former server, Flash item and
+  guild-emblem previews (no browser runs Flash; `img/dofus/` never existed in this repo).
 
-## Done when
+## Security and behaviour changes
 
-- No PHP file outside `public/index.php` and `public/launcher/*.php` is reachable over HTTP.
-- No SQL outside `src/Repository/`; no `echo` of HTML outside `templates/`.
-- Every legacy URL in the table returns a 301 to its new path.
-- No Bootstrap, jQuery or `plugins/` left; CSS comes from the Tailwind build only.
+- Post/Redirect/Get everywhere; flash messages survive the redirect.
+- CSRF token on every POST route except the Dedipass callback; logout is POST-only.
+- Account names (login credentials) are never displayed: the vote ranking shows pseudos.
+- Registration: username `[A-Za-z0-9_-]{3,30}`, password 6–50, question/answer 2–100 latin1 characters,
+  captcha always consumed; errors shown per field.
+- Non-admins get a 404 on `/admin`.
+- Headers on every response: CSP with per-request nonce, `X-Frame-Options`, `X-Content-Type-Options`,
+  `Referrer-Policy`.
+- Input charset hardening (`Support/Text`): invalid UTF-8 is scrubbed; values latin1 cannot represent
+  never reach latin1 comparisons (they used to raise "Illegal mix of collations" → 500).
+
+## Docker
+
+- Apache serves only `public/` (`docker/apache.conf`: `Alias ${APP_BASE_PATH}`, `FallbackResource`);
+  `/` redirects to `/dofus/`.
+- `runtime` target (compose, code bind-mounted at `/var/www/starloco-web`), `tailwind` target (asset
+  build), `production` target (code + CSS baked in, `opcache.validate_timestamps=0`,
+  `public/launcher/files` excluded: mount it). Verified: production image serves pages, CSS, `lang/`,
+  launcher endpoints; source files answer 404.
+
+## Verification (2026-09-13)
+
+- Every route rendered through the Kernel with `strict_variables` as guest and as admin: no error.
+- HTTP end to end: registration (field errors, captcha case-insensitive), CSRF rejection, login
+  (wrong password, remember-me cookie, restore without session), privacy toggle (unknown flag 404),
+  password change (wrong then right answer), vote cooldown (atomic, second vote refused), shop (forced
+  purchase without points refused; purchase debits once, writes the gift and the log), admin news
+  create/list/delete for website and in-game news, non-admin denied, GET logout refused, logout.
+- Legacy redirects, launcher JSON, `lang/`, captcha PNG, hostile inputs (invalid bytes, CJK, emoji).
+- Screenshots (desktop + mobile) of home, ladder, register, drops.
+
+## Deviations from the first version of this plan
+
+- No `LegacyPageController` bridge: all pages were migrated in one pass, so the site never ran half-legacy.
+- No Alpine.js (see Front-end).

@@ -8,6 +8,7 @@ namespace StarLoco\Web;
  * Typed application settings, read once from the environment.
  *
  * Precedence: real environment variables (docker compose) > StarLoco-Web/.env (phpdotenv) > defaults.
+ * Every variable is documented in .env.example.
  */
 final class Config
 {
@@ -15,7 +16,8 @@ final class Config
         public readonly string $appUrl,
         public readonly bool $debug,
         public readonly bool $trustCloudflare,
-        public readonly string $dedipassPublicKey,
+        public readonly string $siteName,
+        public readonly int $adminAccountId,
         public readonly string $dbHost,
         public readonly int $dbPort,
         public readonly string $dbUser,
@@ -26,6 +28,13 @@ final class Config
         public readonly int $loginServerPort,
         public readonly string $gameServerHost,
         public readonly int $gameServerPort,
+        public readonly int $gameServerId,
+        public readonly string $forumUrl,
+        public readonly string $forumRssUrl,
+        public readonly string $downloadUrl,
+        public readonly string $voteUrl,
+        public readonly int $votePoints,
+        public readonly string $dedipassPublicKey,
     ) {
     }
 
@@ -35,7 +44,8 @@ final class Config
             appUrl: rtrim(self::string('APP_URL', 'http://127.0.0.1/dofus/'), '/') . '/',
             debug: self::bool('APP_DEBUG'),
             trustCloudflare: self::bool('TRUST_CLOUDFLARE'),
-            dedipassPublicKey: self::string('DEDIPASS_PUBLIC_KEY', ''),
+            siteName: self::string('SITE_NAME', 'StarLoco'),
+            adminAccountId: self::int('ADMIN_ACCOUNT_ID', 1),
             dbHost: self::string('DB_HOST', '127.0.0.1'),
             dbPort: self::int('DB_PORT', 3306),
             // "root" keeps installs that predate the starloco_web user working.
@@ -47,13 +57,25 @@ final class Config
             loginServerPort: self::int('LOGIN_PORT', 450),
             gameServerHost: self::string('GAME_HOST', '127.0.0.1'),
             gameServerPort: self::int('GAME_PORT', 5555),
+            gameServerId: self::int('GAME_SERVER_ID', 601),
+            forumUrl: self::string('FORUM_URL', ''),
+            forumRssUrl: self::string('FORUM_RSS_URL', ''),
+            downloadUrl: self::string('DOWNLOAD_URL', ''),
+            voteUrl: self::string('VOTE_URL', 'https://www.rpg-paradize.com/'),
+            votePoints: self::int('VOTE_POINTS', 5),
+            dedipassPublicKey: self::string('DEDIPASS_PUBLIC_KEY', ''),
         );
     }
 
-    /** The URL path the site is served under, e.g. "/dofus/". */
+    /** The URL path the site is served under, without trailing slash: "/dofus" (or "" at the root). */
     public function basePath(): string
     {
-        return parse_url($this->appUrl, PHP_URL_PATH) ?: '/';
+        return rtrim(parse_url($this->appUrl, PHP_URL_PATH) ?: '', '/');
+    }
+
+    public function isHttps(): bool
+    {
+        return str_starts_with($this->appUrl, 'https://');
     }
 
     private static function raw(string $key): ?string

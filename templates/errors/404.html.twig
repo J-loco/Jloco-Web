@@ -1,0 +1,12 @@
+{% extends 'layout_narrow.html.twig' %}
+
+{% block title %}Page introuvable{% endblock %}
+
+{% block content %}
+    <div class="card card-body space-y-4 text-center">
+        <p class="text-5xl font-bold text-brand-600 dark:text-brand-400">404</p>
+        <h1 class="text-xl font-bold">Page introuvable</h1>
+        <p class="text-sm text-stone-500 dark:text-stone-400">Cette page n'existe pas ou a été déplacée.</p>
+        <a class="btn btn-primary" href="{{ url('home') }}">Retour à l'accueil</a>
+    </div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends 'layout.html.twig' %}
+{% import 'components/ui.html.twig' as ui %}
+
+{% block title %}Nous rejoindre{% endblock %}
+
+{% block content %}
+    {{ ui.page_header('Nous rejoindre', 'Trois étapes pour commencer l\'aventure sur ' ~ config.siteName ~ '.') }}
+
+    <ol class="space-y-4">
+        <li class="card card-body flex gap-4">
+            <span class="grid size-8 shrink-0 place-items-center rounded-full bg-brand-600 text-sm font-bold text-white dark:bg-brand-500 dark:text-stone-950">1</span>
+            <div class="space-y-2">
+                <h2 class="font-semibold">Crée ton compte</h2>
+                <p class="text-sm">Ton nom de compte et ton mot de passe te serviront à te connecter en jeu et sur le site. Lis aussi les <a class="link" href="{{ url('terms') }}">conditions d'utilisation</a>.</p>
+                {% if current_account() %}
+                    <p class="text-sm text-emerald-700 dark:text-emerald-400">C'est fait, tu es connecté.</p>
+                {% else %}
+                    <a class="btn btn-primary" href="{{ url('register') }}">Créer un compte</a>
+                {% endif %}
+            </div>
+        </li>
+        <li class="card card-body flex gap-4">
+            <span class="grid size-8 shrink-0 place-items-center rounded-full bg-brand-600 text-sm font-bold text-white dark:bg-brand-500 dark:text-stone-950">2</span>
+            <div class="space-y-2">
+                <h2 class="font-semibold">Installe le launcher</h2>
+                <p class="text-sm">Le launcher télécharge le client Dofus Retro configuré pour le serveur et le garde à jour automatiquement.</p>
+                {% if config.downloadUrl %}
+                    <a class="btn btn-primary" href="{{ config.downloadUrl }}">Télécharger le launcher</a>
+                {% else %}
+                    <p class="text-sm text-stone-500 dark:text-stone-400">Le lien de téléchargement sera bientôt disponible.</p>
+                {% endif %}
+            </div>
+        </li>
+        <li class="card card-body flex gap-4">
+            <span class="grid size-8 shrink-0 place-items-center rounded-full bg-brand-600 text-sm font-bold text-white dark:bg-brand-500 dark:text-stone-950">3</span>
+            <div class="space-y-2">
+                <h2 class="font-semibold">Connecte-toi et joue</h2>
+                <p class="text-sm">Lance le jeu depuis le launcher, entre tes identifiants et crée ton personnage.</p>
+            </div>
+        </li>
+    </ol>
+
+    {{ ui.alert('info', 'Un souci de connexion ? Vide le cache du jeu depuis le launcher, puis réessaie. Si le problème persiste, contacte l\'équipe' ~ (config.forumUrl ? ' sur le forum.' : '.'), false) }}
+{% endblock %}

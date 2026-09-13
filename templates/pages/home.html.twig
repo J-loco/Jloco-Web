@@ -1,0 +1,30 @@
+{% extends 'layout.html.twig' %}
+{% import 'components/ui.html.twig' as ui %}
+
+{% block title %}{% if page > 1 %}Actualités, page {{ page }}{% endif %}{% endblock %}
+
+{% block content %}
+    {{ ui.page_header('Actualités', 'Les dernières nouvelles du serveur, de la plus récente à la plus ancienne.') }}
+
+    {% for item in news %}
+        <article class="card overflow-hidden">
+            {% if item.img %}
+                <img class="aspect-[3/1] w-full object-cover" src="{{ item.img }}" alt="" loading="lazy">
+            {% endif %}
+            <div class="card-body space-y-3">
+                <header class="space-y-1">
+                    <h2 class="text-lg font-semibold">{{ item.title }}</h2>
+                    <p class="text-xs text-stone-500 dark:text-stone-400">
+                        <time datetime="{{ item.date|date('c') }}">{{ item.date|date_fr }}</time>{% if item.author %} · par {{ item.author }}{% endif %}
+                    </p>
+                </header>
+                {# Written by an administrator: HTML is allowed on purpose. #}
+                <div class="prose-news text-sm">{{ item.content|raw }}</div>
+            </div>
+        </article>
+    {% else %}
+        {{ ui.empty('Aucune actualité pour le moment.') }}
+    {% endfor %}
+
+    {{ ui.pagination('home', page, pages) }}
+{% endblock %}

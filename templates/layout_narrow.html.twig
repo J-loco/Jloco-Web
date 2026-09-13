@@ -1,0 +1,11 @@
+{# Single centered column without sidebar: forms (login, register, password reset) and errors.
+   Child templates may set "width" to md (default), lg or xl before extending. #}
+{% extends 'layout.html.twig' %}
+
+{% block main %}
+    {% set widths = {md: 'max-w-md', lg: 'max-w-lg', xl: 'max-w-xl'} %}
+    <div class="mx-auto w-full {{ widths[width|default('md')] }} space-y-6">
+        {% include 'partials/flashes.html.twig' %}
+        {% block content %}{% endblock %}
+    </div>
+{% endblock %}

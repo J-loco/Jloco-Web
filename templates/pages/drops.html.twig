@@ -1,0 +1,59 @@
+{% extends 'layout.html.twig' %}
+{% import 'components/ui.html.twig' as ui %}
+
+{% block title %}Drops{% if term %} : {{ term }}{% endif %}{% endblock %}
+
+{% macro rate(drop) %}
+    {%- if drop.max < 1 -%}
+        moins de 1 %
+    {%- elseif drop.min == drop.max -%}
+        {{ drop.max|number_format(drop.max == drop.max|round ? 0 : 1, ',') }} %
+    {%- else -%}
+        {{ drop.min|number_format(drop.min == drop.min|round ? 0 : 1, ',') }} à {{ drop.max|number_format(drop.max == drop.max|round ? 0 : 1, ',') }} %
+    {%- endif -%}
+{% endmacro %}
+
+{% block content %}
+    {% import _self as helpers %}
+    {{ ui.page_header('Visualiseur de drops', 'Qui lâche quoi, et à quel taux (du grade 1 au grade 5).') }}
+
+    <form method="get" action="{{ url('drops') }}" class="card card-body flex flex-wrap items-end gap-3" role="search">
+        <fieldset class="flex rounded-lg border border-stone-300 p-0.5 text-sm dark:border-stone-700">
+            <legend class="sr-only">Rechercher par</legend>
+            {% for value, label in {monster: 'Monstre', item: 'Objet'} %}
+                <label class="cursor-pointer rounded-md px-3 py-1.5 has-checked:bg-brand-600 has-checked:text-white dark:has-checked:bg-brand-500 dark:has-checked:text-stone-950">
+                    <input class="sr-only" type="radio" name="by" value="{{ value }}" {{ by == value ? 'checked' }}>{{ label }}
+                </label>
+            {% endfor %}
+        </fieldset>
+        <div class="min-w-48 flex-1">
+            <label class="sr-only" for="q">Nom</label>
+            <input class="input" id="q" name="q" type="search" value="{{ term }}" minlength="2" placeholder="Ex. : Bouftou, Laine de Bouftou…" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Rechercher</button>
+    </form>
+
+    {% if searched %}
+        {% for group in groups %}
+            <section class="card overflow-hidden">
+                <div class="card-header"><h2 class="card-title">{{ group.name }}</h2></div>
+                <div class="table-wrap">
+                    <table class="table">
+                        <thead><tr><th>{{ by == 'monster' ? 'Objet' : 'Monstre' }}</th><th class="text-right">Prospection</th><th class="text-right">Taux</th></tr></thead>
+                        <tbody>
+                            {% for drop in group.drops %}
+                                <tr>
+                                    <td>{{ drop.name }}</td>
+                                    <td class="text-right tabular-nums">{{ drop.prospecting > 0 ? drop.prospecting : '—' }}</td>
+                                    <td class="text-right tabular-nums">{{ helpers.rate(drop) }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        {% else %}
+            {{ ui.empty(term|length < 2 ? 'Saisis au moins 2 caractères.' : 'Aucun résultat pour « ' ~ term ~ ' ».') }}
+        {% endfor %}
+    {% endif %}
+{% endblock %}
