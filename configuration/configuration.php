@@ -2,20 +2,34 @@
 /*************************************/
 /*******       VARIABLE       ********/
 /*************************************/
+require_once __DIR__ . '/../include/autoload.php';
+
+/** Settings from the environment (src/Config.php). Constants below are aliases kept for the legacy pages. */
+function config(): StarLoco\Web\Config {
+	static $config = null;
+	return $config ??= StarLoco\Web\Config::fromEnvironment();
+}
+
+/** Lazy login/game connections (src/Database.php). */
+function database(): StarLoco\Web\Database {
+	static $database = null;
+	return $database ??= new StarLoco\Web\Database(config());
+}
+
 define('TITLE', 'StarLoco');
 date_default_timezone_set('Europe/Paris');
-							
+
 /** URL **/
-	define('URL_SITE', rtrim(getenv('APP_URL') ?: 'http://127.0.0.1/dofus/', '/') . '/');
-	define('APP_DEBUG', getenv('APP_DEBUG') === '1');
+	define('URL_SITE', config() -> appUrl);
+	define('APP_DEBUG', config() -> debug);
 	ini_set('display_errors', APP_DEBUG ? '1' : '0');
-	
+
 	/** Réseaux sociaux **/
 	define('URL_TWITTER', '');
 	define('URL_FACEBOOK', 'https://www.facebook.com/');
 	define('NAME_FACEBOOK', 'StarLoco');
 	define('URL_GOOGLE', '');
-	
+
 	/** Autres **/
 	define('URL_RPG', 'http://www.rpg-paradize.com/');
 	define('URL_FORUM', '');
@@ -23,61 +37,24 @@ date_default_timezone_set('Europe/Paris');
 	define('URL_TEAMSPEAK', '');
 	define('URL_RSS_NEWS_IPB', '');
 	define('ADMIN_GUID', 1);
-								
 
 	//Http://www.***.**/... neccésaire dans l'URL ( compatibilité Firefox ).
 	define('URL_LAUNCHER_1_29', 'http://127.0.0.1/upload/Dofus.exe');
 	define('URL_INSTALLATEUR', 'http://127.0.0.1/upload/Install.exe');
 	define('URL_CONFIG', 'http://127.0.0.1/upload/config.xml');
-	
-/** Serveurs **/
-	define('REQUEST_TIMEOUT', '1000');
-	/** Serveur login **/
-	define('LOGIN_IP', getenv('LOGIN_HOST') ?: '127.0.0.1');
-	define('LOGIN_PORT', '450');
-	define('LOGIN_DB_NAME', 'starloco_login');
-	define('LOGIN_DB_USER', 'root');
-	define('LOGIN_DB_PASS', getenv('DB_PASS') ?: '');
-	$login = newPdo(getenv('DB_HOST') ?: '127.0.0.1', LOGIN_DB_USER, LOGIN_DB_PASS, LOGIN_DB_NAME);
-	
-	/** Serveur jiva **/
-	define('JIVA_IP', getenv('GAME_HOST') ?: '127.0.0.1');
-	define('JIVA_PORT', '5555');
-	define('JIVA_DB_NAME', 'starloco_game');
-	define('JIVA_DB_USER', 'root');
-	define('JIVA_DB_PASS', getenv('DB_PASS') ?: '');
-	$jiva = newPdo(getenv('DB_HOST') ?: '127.0.0.1', JIVA_DB_USER, JIVA_DB_PASS, JIVA_DB_NAME);
-	
-/** Shop **/
-	define('PTS_PER_VOTE', '5');
-	// Only enable behind Cloudflare: otherwise anyone can forge CF-Connecting-IP.
-	define('TRUST_CLOUDFLARE', getenv('TRUST_CLOUDFLARE') === '1');
-	define('DEDIPASS_PUBLIC_KEY', getenv('DEDIPASS_PUBLIC_KEY') ?: '');
-	
-/** Mysql **/
-	/** Variables **/
-	define('DB_IP', getenv('DB_HOST') ?: '127.0.0.1');
-	define('DB_NAME', 'starloco_login');
-	define('DB_USER', 'root');
-	define('DB_PASS', getenv('DB_PASS') ?: '');
-	$connection = $login; // same database as $login, no need for a second connection
-	
-	/** Fonction **/ 
-	function newPdo($ip, $user, $pass, $db) {
-		try {
-			$options[PDO::ATTR_ERRMODE] = PDO::ERRMODE_EXCEPTION;
-			$connection = new PDO('mysql:host=' . $ip . ';dbname=' . $db, $user, $pass, $options);  
-			$connection -> exec('SET NAMES utf8');    
-			return $connection;
-		} catch(Exception $e) {
-			error_log('StarLoco-Web: cannot connect to ' . $db . ': ' . $e -> getMessage());
-			http_response_code(503);
-			die(APP_DEBUG ? 'Error : ' . $e -> getMessage() : 'Service temporairement indisponible.');
-		}	
-	}
 
-/** Don't tuch **/
-define('PAGE_WITHOUT_RIGHT_MENU', 'signin register password');
+/** Serveurs (status probes in the sidebar and launcher/status.php) **/
+	define('LOGIN_IP', config() -> loginServerHost);
+	define('LOGIN_PORT', config() -> loginServerPort);
+	define('JIVA_IP', config() -> gameServerHost);
+	define('JIVA_PORT', config() -> gameServerPort);
+
+/** Shop **/
+	define('PTS_PER_VOTE', 5);
+	// Only enable behind Cloudflare: otherwise anyone can forge CF-Connecting-IP.
+	define('TRUST_CLOUDFLARE', config() -> trustCloudflare);
+	define('DEDIPASS_PUBLIC_KEY', config() -> dedipassPublicKey);
+
 	
 /*************************************/
 /*******       FUNCTION       ********/
@@ -182,39 +159,6 @@ function parseDate($date) {
 	return "le " . $array[2] . "/" . $array[1] . "/" . $array[0] . " à " . $array[3] . "h" . $array[4];
 }
 
-function array_sort($array, $on, $order = SORT_ASC) {
-    $new_array = array();
-    $sortable_array = array();
-
-    if(count($array) > 0) {
-        foreach ($array as $k => $v) {
-            if (is_array($v)) {
-                foreach ($v as $k2 => $v2) {
-                    if ($k2 == $on) {
-                        $sortable_array[$k] = $v2;
-                    }
-                }
-            } else {
-                $sortable_array[$k] = $v;
-            }
-        }
-
-        switch ($order) {
-            case SORT_ASC:
-                asort($sortable_array);
-            break;
-            case SORT_DESC:
-                arsort($sortable_array);
-            break;
-        }
-
-        foreach ($sortable_array as $k => $v) {
-            $new_array[$k] = $array[$k];
-        }
-    }
-
-    return $new_array;
-}
 
 function convertStatsToString($data) {
 	$stats = explode(",", $data);

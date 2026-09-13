@@ -1,3 +1,28 @@
+<?php
+/**
+ * Returns fn(int $mapId): ?object{name: ?string, x: string, y: string} locating a character.
+ * maps.mappos is "x,y,subAreaId" (game DB); sub-area names live in world_base_sub_areas (login DB).
+ */
+function sidebar_locator(PDO $login, PDO $game): Closure {
+	$maps = $game -> prepare('SELECT mappos FROM maps WHERE id = ?;');
+	$subAreas = $login -> prepare('SELECT name FROM world_base_sub_areas WHERE id = ?;');
+
+	return function (int $mapId) use ($maps, $subAreas): ?object {
+		$maps -> execute([$mapId]);
+		$mappos = $maps -> fetchColumn();
+		$maps -> closeCursor();
+		if ($mappos === false)
+			return null;
+
+		[$x, $y, $subAreaId] = array_pad(explode(',', (string) $mappos), 3, '');
+		$subAreas -> execute([(int) $subAreaId]);
+		$name = $subAreas -> fetchColumn();
+		$subAreas -> closeCursor();
+
+		return (object) ['name' => $name === false ? null : $name, 'x' => $x, 'y' => $y];
+	};
+}
+?>
 <div id="fb-root"></div>
 <script>(function(d, s, id) {
   var js, fjs = d.getElementsByTagName(s)[0];
@@ -25,11 +50,7 @@
 									<div class="pull-left">
 										<h5><a href="#">Serveur de connexion</a></h5>
 										Connecté(s) : <?php 
-										$query = $login -> prepare('SELECT COUNT(*) FROM world_players WHERE logged = 1;');
-										$query -> execute();
-										$row = $query -> fetch();
-										$query -> closeCursor();
-										echo $row['COUNT(*)']; 
+										echo (int) $login -> query('SELECT COUNT(*) FROM world_players WHERE logged = 1;') -> fetchColumn(); 
 										?>
 									</div>
 									
@@ -54,11 +75,7 @@
 									<div class="pull-left">
 										<h5><a href="#" style="color: #2a5d9f">Jiva - Ankalike</a></h5>
 										Connecté(s) : <?php 
-										$query = $login -> prepare('SELECT COUNT(*) FROM world_players WHERE logged = 1 AND server = 601;');
-										$query -> execute();
-										$row = $query -> fetch();
-										$query -> closeCursor();
-										echo $row['COUNT(*)']; 
+										echo (int) $login -> query('SELECT COUNT(*) FROM world_players WHERE logged = 1 AND server = 601;') -> fetchColumn(); 
 										?>
 										<div class="info">
 											<?php
@@ -98,29 +115,13 @@
 							<li class="no-padding-top no-padding-bottom"><br />
 								<div class="facebook-like-box">
 									<?php
-									$query = $login -> prepare('SELECT COUNT(*) FROM world_accounts;');
-									$query -> execute();
-									$row = $query -> fetch();
-									$query -> closeCursor();
-									$inscris = $row['COUNT(*)'];
+									$inscris = (int) $login -> query('SELECT COUNT(*) FROM world_accounts;') -> fetchColumn();
 				
-									$query = $login -> prepare('SELECT COUNT(*) FROM `world_guilds`;');
-									$query -> execute();
-									$row = $query -> fetch();
-									$query -> closeCursor();
-									$guildes = $row['COUNT(*)'];
+									$guildes = (int) $login -> query('SELECT COUNT(*) FROM `world_guilds`;') -> fetchColumn();
 									
-									$query = $login -> prepare('SELECT COUNT(*) FROM `world_objects`;');
-									$query -> execute();
-									$row = $query -> fetch();
-									$query -> closeCursor();
-									$objets = $row['COUNT(*)'];
+									$objets = (int) $login -> query('SELECT COUNT(*) FROM `world_objects`;') -> fetchColumn();
 									
-									$query = $login -> prepare('SELECT COUNT(*) FROM world_players;');
-									$query -> execute();
-									$row = $query -> fetch();
-									$query -> closeCursor();
-									$personnages = $row['COUNT(*)']; ?>
+									$personnages = (int) $login -> query('SELECT COUNT(*) FROM world_players;') -> fetchColumn(); ?>
 									
 									<h4>Inscris&nbsp; : <?php echo $inscris; ?></h4>
 									<br/><h4>Guildes&nbsp; : <?php echo $guildes; ?></h4>
@@ -145,7 +146,7 @@
 							$query -> execute();
 							$query -> setFetchMode(PDO:: FETCH_OBJ);
 
-							$subArea = $jiva -> prepare('SELECT s.name FROM maps m JOIN subarea_data s ON s.id = SUBSTRING_INDEX(m.mappos, \',\', -1) WHERE m.id = ?;');
+							$locate = sidebar_locator($login, $jiva);
 							$podium = [
 								1 => ['F5C553', ' est le seul à être performant sur son expérience.'],
 								2 => ['D1D1E3', ' essaye de prendre possésion de la première place malgrè ça légére infériorité.'],
@@ -159,11 +160,9 @@
 
 								$position = '';
 								if($row -> showOrHidePos) {
-									$subArea -> execute([$row -> map]);
-									$subAreaName = $subArea -> fetchColumn();
-									$subArea -> closeCursor();
-									if($subAreaName !== false)
-										$position = ' Il traverse en ce moment même ' . htmlspecialchars($subAreaName) . '.';
+									$place = $locate((int) $row -> map);
+									if($place && $place -> name !== null)
+										$position = ' Il traverse en ce moment même ' . e($place -> name) . '.';
 								}
 
 								echo '<li class="no-padding"><h4 class="padding-15"><a href="#"><i class="ion-trophy" style="color: #' . $color . ';"></i>
@@ -180,11 +179,7 @@
 				</div>
 				
 				<?php 
-				$query = $login -> prepare('SELECT COUNT(*) FROM world_players WHERE groupe = -1 AND deshonor > 0;');
-				$query -> execute();
-				$row = $query -> fetch();
-				$query -> closeCursor();
-				$i = $row['COUNT(*)'];
+				$i = (int) $login -> query('SELECT COUNT(*) FROM world_players WHERE groupe = -1 AND deshonor > 0;') -> fetchColumn();
 				if($i > 0) {
 					?>
 					<div class="section carousel-tab section-warning">
@@ -198,12 +193,9 @@
 								$query -> execute();
 								$query -> setFetchMode(PDO:: FETCH_OBJ);
 								
-								$position = $jiva -> prepare('SELECT m.mappos, s.name FROM maps m LEFT JOIN subarea_data s ON s.id = SUBSTRING_INDEX(m.mappos, ',', -1) WHERE m.id = ?;');
+								$locate ??= sidebar_locator($login, $jiva);
 								while($row = $query -> fetch()) {
-									$position -> execute([$row -> map]);
-									$place = $position -> fetch(PDO::FETCH_OBJ);
-									$position -> closeCursor();
-									$coordinates = $place ? explode(',', $place -> mappos) : [];
+									$place = $locate((int) $row -> map);
 									?><li class="no-padding clearfix">
 										<h4 class="padding-15"><a href="#"><?= e($row -> name . ' - Niveau ' . $row -> level) ?> </a></h4>
 
@@ -212,8 +204,8 @@
 											Cet <?= $row -> sexe == 0 ? 'homme' : 'femme' ?> mérite une correction ! </p>
 											<p>
 											<?php
-											if($row -> logged == 1 && $place && isset($coordinates[1]))
-												echo "Cet personne a été récement vue à travers " . e($place -> name) . " ( <b>" . e($coordinates[0]) . " ; " . e($coordinates[1]) . "</b>) !";
+											if($row -> logged == 1 && $place && $place -> name !== null)
+												echo "Cet personne a été récement vue à travers " . e($place -> name) . " ( <b>" . e($place -> x) . " ; " . e($place -> y) . "</b>) !";
 											else
 												echo "Nous ne possédons pour l'instant aucune information concernant sa position..";
 											?>

@@ -72,15 +72,17 @@ Both servers use Apache MINA with a newline+NUL text codec. Packets are 2-charac
 - `models/` — reusable Lua model definitions.
 
 ### Web portal (`StarLoco-Web/`)
-PHP app with a single front controller (`index.php`) routing via `?page=<name>`, restricted to the whitelist in `include/routes.php`. `include/bootstrap.php` loads config, helpers (`include/helpers.php`) and auth (`include/auth.php`). PDO connects to both the login DB (`$login`) and game DB (`$jiva`). Pages live in `pages/`, config in `configuration/` (values from env: `APP_URL`, `APP_DEBUG`, `TRUST_CLOUDFLARE`, `DEDIPASS_PUBLIC_KEY`, `DB_*`).
+PHP 8.3 app with a single front controller (`index.php`) routing via `?page=<name>`, restricted to the whitelist in `include/routes.php`. `include/bootstrap.php` loads config, helpers (`include/helpers.php`), session, DB globals and auth (`include/auth.php`). Classes live in `src/` (namespace `StarLoco\Web\`: `Config`, `Database`, `Captcha`, `Migration\*`), dependencies via Composer. Settings come from env (`src/Config.php`; `config()` / `database()` helpers, legacy constants kept as aliases). Pages live in `pages/` and use the globals `$login` (login DB) and `$jiva` (game DB); rows are objects by default and prepared statements are native (errors surface at `prepare()`).
 
-A staged refactor is in progress — plan, audit and status in `StarLoco-Web/docs/refactor/` (Phase 0 security done; next: Phase 1 foundation, Phase 2 real URL paths + Tailwind). Rules for any page code until Phase 2:
+Docker (from `StarLoco-Game/`): `docker compose build starloco_web && docker compose up -d starloco_web`. Build only the web image: `starloco_login` currently also has `build: ../StarLoco-Web`. The web container connects as the least-privilege `starloco_web` DB user; the one-off `starloco_web_migrate` service (root) runs `bin/migrate`, which applies `StarLoco-Web/migrations/*.sql` and provisions that user (grants in `src/Migration/WebUserProvisioner.php`: add a table there when a page starts writing to it). PHP errors: `docker compose logs starloco_web`.
+
+A staged refactor is in progress — plan, audit and status in `StarLoco-Web/docs/refactor/` (Phases 0 security and 1 foundation done; next: Phase 2 real URL paths + Tailwind). Rules for any page code until Phase 2:
 - SQL only with `?` placeholders; never concatenate values.
 - Wrap printed values in `e()`; every POST form includes `<?= csrf_field() ?>` (index.php rejects POSTs without it).
 - Build links with `url('page', [...])`, never a literal `?page=` (Phase 2 switches `url()` to real paths).
 - POST handlers end with `flash()` + `redirect()`; use `require_login()` / `is_admin()` for access checks.
 - XP progress comes from `class/Experience.class.php` (mirror of `StarLoco-Game/scripts/data/Experience.lua`; the `experience` SQL table no longer exists).
-- Web DB migrations currently go in `StarLoco-Game/db-init/` (`11-…`, `12-…`).
+- Schema changes: add a re-runnable `StarLoco-Web/migrations/NNN_name.sql` (first line `-- database: game` to target the game DB), never `StarLoco-Game/db-init/`.
 
 ### Client SWF mods (`StarLoco-Client/`)
 The Dofus 1.39 client is shipped as an Electron app wrapping a Flash runtime. The main script SWF lives at `StarLoco-Client/resources/app/retroclient/loader.swf`. Source is AS2 with heavy obfuscation (classes renamed to `_SafeStr_NNN`, members bracket-accessed with non-printable string keys like `this.api["\x1c\x16\n"]`).

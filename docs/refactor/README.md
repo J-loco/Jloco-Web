@@ -23,7 +23,7 @@ and a Tailwind CSS UI (replacing Bootstrap 3 + jQuery), without a big-bang rewri
 | Phase | File | Status |
 |---|---|---|
 | 0 — Security fixes, no restructuring | [phase-0-security.md](phase-0-security.md) | Done (2026-09-13) |
-| 1 — Modern PHP foundation | [phase-1-foundation.md](phase-1-foundation.md) | Planned |
+| 1 — Modern PHP foundation | [phase-1-foundation.md](phase-1-foundation.md) | Done (2026-09-13) |
 | 2 — Layered architecture, real URL paths, Tailwind UI | [phase-2-architecture-routing.md](phase-2-architecture-routing.md) | Planned |
 | 3 — Tooling, tests, password migration | [phase-3-quality.md](phase-3-quality.md) | Planned |
 
@@ -42,9 +42,11 @@ docker compose exec -T starloco_web sh -c 'cd /var/www/html/dofus && find . -nam
 curl -s http://127.0.0.1/dofus/ | grep -E "(Warning|Fatal error|Deprecated):"
 ```
 
-DB migrations live in `StarLoco-Game/db-init/` (run automatically on a fresh MariaDB volume).
-On an existing volume, apply a new file by hand:
+Portal DB migrations live in `StarLoco-Web/migrations/` and are applied by the one-off
+`starloco_web_migrate` service before `starloco_web` starts (details in Phase 1):
 
 ```bash
-docker compose exec -T starloco_mariadb sh -c 'mariadb -uroot -p"$MYSQL_ROOT_PASSWORD"' < db-init/<file>.sql
+docker compose build starloco_web && docker compose up -d starloco_web
+docker compose run --rm starloco_web_migrate   # apply new migrations without restarting
+docker compose logs -f starloco_web            # PHP errors are logged here
 ```

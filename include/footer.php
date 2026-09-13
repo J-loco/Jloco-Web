@@ -134,7 +134,8 @@
 								<label class="control-label margin-top-10" for="security-password">Image de sécurité</label>
 								
 								<div class="control-label margin-top-10" >
-									<img class="" src="./img/captcha.php" alt="Captcha" />
+									<!-- Loaded when the modal opens, so it does not replace the code of the captcha on the register page. -->
+									<img data-captcha-src="<?= e(URL_SITE . 'img/captcha.php') ?>" alt="Captcha" title="Cliquer pour changer d'image" style="cursor: pointer;" onclick="this.src = this.getAttribute('data-captcha-src') + '?' + Date.now();" />
 								</div>
 							
 								<div class="controls margin-top-5">
@@ -262,6 +263,11 @@
 			}, 2500);
 		});
 		
+		$('#register').on('show.bs.modal', function () {
+			var captcha = $(this).find('img[data-captcha-src]');
+			captcha.attr('src', captcha.attr('data-captcha-src') + '?' + Date.now());
+		});
+
 		/* Load Content
 		/*----------------------------------------------------*/	
 		$(".loaded-content section").slice(0, 3).show();

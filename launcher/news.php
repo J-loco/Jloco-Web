@@ -17,10 +17,9 @@ $limit = isset($_GET['limit']) ? max(1, min(30, (int) $_GET['limit'])) : 10;
 
 $items = array();
 try {
-    $query = $connection->prepare('SELECT `id`, `author`, `title`, `content`, `date`, `img` FROM `website_timeline_news` ORDER BY `id` DESC LIMIT :limit;');
+    $query = database()->login()->prepare('SELECT `id`, `author`, `title`, `content`, `date`, `img` FROM `website_timeline_news` ORDER BY `id` DESC LIMIT :limit;');
     $query->bindValue(':limit', $limit, PDO::PARAM_INT);
     $query->execute();
-    $query->setFetchMode(PDO::FETCH_OBJ);
     while ($row = $query->fetch()) {
         $items[] = array(
             'id'      => (int) $row->id,

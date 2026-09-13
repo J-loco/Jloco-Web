@@ -15,9 +15,7 @@ $game  = checkState(JIVA_IP, JIVA_PORT);
 
 $players = null;
 try {
-    $query = $connection->query('SELECT COUNT(*) FROM `world_accounts` WHERE `logged` = 1;');
-    $players = (int) $query->fetchColumn();
-    $query->closeCursor();
+    $players = (int) database()->login()->query('SELECT COUNT(*) FROM `world_accounts` WHERE `logged` = 1;')->fetchColumn();
 } catch (Exception $e) {
     $players = null;
 }

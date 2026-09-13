@@ -27,8 +27,9 @@
 											$error = 'Les mots de passe ne sont pas identique !';
 										} else if(!filter_var($input['email'], FILTER_VALIDATE_EMAIL)) {
 											$error = 'L\'email est invalide !';
+										} else if(!StarLoco\Web\Captcha::verify($input['security-password'])) {
+											$error = 'Le captcha ne correspond pas à celui de l\'image !';
 										} else if(!isset($_POST['checkbox'])) {
-											// Captcha check disabled until GD is available in the image (docs/refactor, Phase 1).
 											$error = 'Vous devez accepter les CGUS afin de vous incrire sur nos service.';
 										}
 
@@ -98,7 +99,7 @@
 											<label class="control-label margin-top-10" for="reg-security">Image de sécurité</label>
 
 											<div class="control-label margin-top-10">
-												<img class="" src="./img/captcha.php" alt="Captcha">
+												<img src="<?= e(URL_SITE . 'img/captcha.php') ?>" alt="Captcha" title="Cliquer pour changer d'image" style="cursor: pointer;" onclick="this.src = this.src.split('?')[0] + '?' + Date.now();">
 											</div>
 
 											<div class="controls margin-top-5">

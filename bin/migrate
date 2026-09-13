@@ -1,0 +1,68 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * Applies pending migrations/*.sql and provisions the portal's database user.
+ *
+ * Runs as the one-off "starloco_web_migrate" compose service (with admin credentials, which the
+ * web container itself never gets), or by hand: php bin/migrate
+ *
+ * Environment:
+ *   DB_HOST, DB_PORT, LOGIN_DB_NAME, GAME_DB_NAME  where the databases are
+ *   DB_USER, DB_PASS                               admin account used to migrate (e.g. root)
+ *   WEB_DB_USER, WEB_DB_PASSWORD                   portal account to create/update (skipped if unset)
+ *   MIGRATE_WAIT_SECONDS                           how long to wait for the base schema (default 300)
+ */
+
+declare(strict_types=1);
+
+use StarLoco\Web\Config;
+use StarLoco\Web\Database;
+use StarLoco\Web\Migration\Migrator;
+use StarLoco\Web\Migration\WebUserProvisioner;
+
+require __DIR__ . '/../include/autoload.php';
+
+$log = static fn (string $message) => fwrite(STDOUT, '[migrate] ' . $message . PHP_EOL);
+$config = Config::fromEnvironment();
+$database = new Database($config);
+
+// On a fresh volume MariaDB first runs StarLoco-Game/db-init (large dumps); wait for the base
+// tables the migrations build on instead of failing.
+$deadline = time() + (int) (getenv('MIGRATE_WAIT_SECONDS') ?: 300);
+while (true) {
+    try {
+        $login = $database->connect($config->loginDbName);
+        $game = $database->connect($config->gameDbName);
+        $ready = $login->query("SHOW TABLES LIKE 'world_accounts'")->fetchColumn() !== false
+            && $game->query("SHOW TABLES LIKE 'gifts'")->fetchColumn() !== false;
+        if ($ready) {
+            break;
+        }
+        $reason = 'base schema not loaded yet';
+    } catch (PDOException $e) {
+        $reason = $e->getMessage();
+    }
+
+    if (time() >= $deadline) {
+        $log('giving up: ' . $reason);
+        exit(1);
+    }
+    $log('waiting for the database: ' . $reason);
+    sleep(5);
+}
+
+try {
+    $applied = (new Migrator(['login' => $login, 'game' => $game], dirname(__DIR__) . '/migrations', $log))->run();
+    $log($applied === 0 ? 'no pending migration' : "$applied migration(s) applied");
+
+    $webUser = getenv('WEB_DB_USER') ?: '';
+    $webPassword = getenv('WEB_DB_PASSWORD') ?: '';
+    if ($webUser !== '') {
+        (new WebUserProvisioner($login))->provision($webUser, $webPassword, ['login' => $config->loginDbName, 'game' => $config->gameDbName]);
+        $log("database user '$webUser' provisioned");
+    }
+} catch (Throwable $e) {
+    $log('failed: ' . $e->getMessage());
+    exit(1);
+}

@@ -56,7 +56,7 @@ if(isset($_POST['confirm'])) {
 }
 
 ob_start();
-if($object -> effects !== '')
+if((string) $object -> effects !== '')
 	convertStatsToString($object -> effects);
 $effectsTooltip = ob_get_clean() ?: 'Aucun';
 ?>

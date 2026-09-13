@@ -1,0 +1,6 @@
+# The image only contains the PHP runtime and Composer dependencies; the application
+# code is bind-mounted by StarLoco-Game/docker-compose.yml.
+*
+!composer.json
+!composer.lock
+!docker/

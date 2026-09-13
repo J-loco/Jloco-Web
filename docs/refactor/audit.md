@@ -50,6 +50,7 @@ The code predates the current `starloco_login` / `starloco_game` schemas.
 | D15 | Forum news page returned 500: empty `URL_RSS_NEWS_IPB` passed to `DOMDocument::load()`; external feed HTML printed unescaped | `pages/news.php`, `include/rsslib.php` |
 | D16 | `display_errors` on in the image: the `utf8_encode` deprecation notice was printed inside the launcher JSON | `launcher/news.php` |
 | D17 | Buying inactive items or items from another server was possible (no `active`/`server` check) | `buy.php` |
+| D18 | Sidebar read sub-area names from `starloco_game.subarea_data.name` (no such column; names are in `starloco_login.world_base_sub_areas`); wanted-list `prepare()` received two arguments because of an unescaped quote | `include/rightmenu.php` (fixed in Phase 1) |
 
 ## Maintainability
 
