@@ -142,53 +142,34 @@
 						<ul class="box" style="left: 0px; top: 0px;">	
 							<?php 
 
-							$query = $login -> prepare('SELECT * FROM world_players WHERE groupe = -1 ORDER BY xp DESC LIMIT 0, 3;');
-                  					$query -> execute();
-         						$query -> setFetchMode(PDO:: FETCH_OBJ);
-							
-	           					$i = 1;
-		
+							$query = $login -> prepare('SELECT p.name, p.class, p.level, p.sexe, p.map, a.showOrHidePos FROM world_players p JOIN world_accounts a ON a.guid = p.account WHERE p.groupe = -1 ORDER BY p.xp DESC LIMIT 3;');
+							$query -> execute();
+							$query -> setFetchMode(PDO:: FETCH_OBJ);
+
+							$subArea = $jiva -> prepare('SELECT s.name FROM maps m JOIN subarea_data s ON s.id = SUBSTRING_INDEX(m.mappos, \',\', -1) WHERE m.id = ?;');
+							$podium = [
+								1 => ['F5C553', ' est le seul à être performant sur son expérience.'],
+								2 => ['D1D1E3', ' essaye de prendre possésion de la première place malgrè ça légére infériorité.'],
+								3 => ['E48644', ' à l\'amibition d\'être à la première place, même s\'il lui reste pas mal de travail !'],
+							];
+
+							$i = 1;
+
 							while($row = $query -> fetch()) {
-								$name = $row -> name;
-								$class = $row -> class;
-								$level = $row -> level;
-								$sexe = $row -> sexe;
-								
-								$map = $jiva -> prepare('SELECT id, mappos FROM maps WHERE id = ' . $row -> map . ';');
-								$map -> execute();
-								$map -> setFetchMode(PDO:: FETCH_OBJ);
-								$map_row = $map -> fetch();	
-								$map -> closeCursor();
-								
-								$mappos = explode(",", $map_row -> mappos)[2];
-								
-								$sub = $login -> prepare('SELECT id, name FROM subarea_data WHERE id = ' . $mappos . ';');
-								$sub -> execute();
-								$sub -> setFetchMode(PDO:: FETCH_OBJ);
-								$sub_row = $sub -> fetch();	
-								$sub -> closeCursor();
-								
-								$color = "";
-								switch($i) {
-								case 1: $color = "F5C553"; 
-									echo '<li class="no-padding"><h4 class="padding-15"><a href="#"><i class="ion-trophy" style="color: #' . $color . ';"></i>
-									' . $i . '<sup>er</sup> Joueur : ' . $name . '</a></h4><div class="padding-15"><p>
-									Un jeune ' . convertClassIdToString($class, $sexe) . ', de niveau ' . $level . ' est le seul à être performant sur son expérience' . ($row -> showOrHidePos ? '.' : '
-									et traverse en se moment même ' . $sub_row -> name . '.</p></div></li>');
-									break;
-								case 2: $color = "D1D1E3"; 
-									echo '<li class="no-padding"><h4 class="padding-15"><a href="#"><i class="ion-trophy" style="color: #' . $color . ';"></i>
-									' . $i . '<sup>er</sup> Joueur : ' . $name . '</a></h4><div class="padding-15"><p>
-									Un jeune ' . convertClassIdToString($class, $sexe) . ', de niveau ' . $level . ' essaye de prendre possésion de la première place malgrè ça légére infériorité.' . ($row -> showOrHidePos ? '' : 
-									' Il traverse en se moment même ' . $sub_row -> name . '.</p></div></li>');
-									break;
-								case 3: $color = "E48644"; 
-									echo '<li class="no-padding"><h4 class="padding-15"><a href="#"><i class="ion-trophy" style="color: #' . $color . ';"></i>
-									' . $i . '<sup>er</sup> Joueur : ' . $name . '</a></h4><div class="padding-15"><p>
-									Un jeune ' . convertClassIdToString($class, $sexe) . ', de niveau ' . $level . ' à l\'amibition d\'être à la première place, même s\'il lui reste pas mal de travail !' . ($row -> showOrHidePos ? '' : 
-									' Il traverse en se moment même ' . $sub_row -> name . '.</p></div></li>');
-									break;
+								[$color, $sentence] = $podium[$i];
+
+								$position = '';
+								if($row -> showOrHidePos) {
+									$subArea -> execute([$row -> map]);
+									$subAreaName = $subArea -> fetchColumn();
+									$subArea -> closeCursor();
+									if($subAreaName !== false)
+										$position = ' Il traverse en ce moment même ' . htmlspecialchars($subAreaName) . '.';
 								}
+
+								echo '<li class="no-padding"><h4 class="padding-15"><a href="#"><i class="ion-trophy" style="color: #' . $color . ';"></i>
+								' . $i . '<sup>er</sup> Joueur : ' . htmlspecialchars($row -> name) . '</a></h4><div class="padding-15"><p>
+								Un jeune ' . convertClassIdToString($row -> class, $row -> sexe) . ', de niveau ' . $row -> level . $sentence . $position . '</p></div></li>';
 
 								$i++;
 							}
@@ -229,16 +210,16 @@
 									$logged = $row -> logged;
 									
 					
-									$map = $jiva -> prepare('SELECT id, mappos FROM maps WHERE id = ' . $row -> map . ';');
-									$map -> execute();
+									$map = $jiva -> prepare('SELECT id, mappos FROM maps WHERE id = ?;');
+									$map -> execute([$row -> map]);
 									$map -> setFetchMode(PDO:: FETCH_OBJ);
 									$map_row = $map -> fetch();	
 									$map -> closeCursor();
 									
 									$mappos = explode(",", $map_row -> mappos);
 									
-									$sub = $login -> prepare('SELECT id, name FROM subarea_data WHERE id = ' . $mappos[2] . ';');
-									$sub -> execute();
+									$sub = $jiva -> prepare('SELECT id, name FROM subarea_data WHERE id = ?;');
+									$sub -> execute([$mappos[2]]);
 									$sub -> setFetchMode(PDO:: FETCH_OBJ);
 									$sub_row = $sub -> fetch();	
 									$sub -> closeCursor();

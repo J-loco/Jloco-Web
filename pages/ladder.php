@@ -51,33 +51,7 @@
 													<td class="hidden-sm"><img src ="<?php echo URL_SITE . 'img/dofus/img/class/' . ($row -> class * 10 + $row -> sexe) . '.png'; ?>" /></td>
 													<td><?php echo $row -> level; ?></td>
 													<td> 
-														<?php 
-														if($row -> level != 200) {
-															$query2 = $jiva -> prepare('SELECT lvl, perso FROM experience WHERE lvl = ' . $row -> level . ';');
-															$query2 -> execute();
-															$query2 -> setFetchMode(PDO:: FETCH_OBJ);
-															$row2 = $query2 -> fetch();
-															$query2 -> closeCursor();
-															
-															$query3 = $jiva -> prepare('SELECT lvl, perso FROM experience WHERE lvl = ' . ($row -> level + 1) . ';');
-															$query3 -> execute();
-															$query3 -> setFetchMode(PDO:: FETCH_OBJ);
-															$row3 = $query3 -> fetch();
-															$query3 -> closeCursor();
-															
-															$xpActuel = $row -> xp;
-															$xpMax1 = $row2 -> perso;
-															$xpMax2 = $row3 -> perso;
-															
-															$pourcent = ($xpActuel - $xpMax1) / ($xpMax2 - $xpMax1) * 100;
-															
-															if($pourcent < 10)
-																echo '0' . substr($pourcent * 100, 0, 1) . '%';
-															else
-																echo substr($pourcent * 100, 0, 2) . '%';
-														} else {
-															echo '100%';
-														}	
+														<?php echo Experience::format(Experience::progress(Experience::PLAYER, Experience::MAX_PLAYER_LEVEL, (int) $row -> level, (int) $row -> xp));
 														?>
 													</td>
 													<td class="hidden-sm"><img style="border-radius: 15px; -moz-border-radius: 15px; -webkit-border-radius: 15px;" src="<?php echo URL_SITE . 'img/dofus/img/align/' . $row -> alignement . '.jpg'; ?>" /></td>
@@ -159,7 +133,7 @@
 								<div class="row">
 									<div class="col-md-12">
 										<?php				
-										$query = $login -> prepare("SELECT name, emblem, lvl, xp  FROM `world.entity.guilds` ORDER BY xp DESC LIMIT 0, 50;");
+										$query = $login -> prepare("SELECT name, emblem, lvl, xp  FROM `world_guilds` ORDER BY xp DESC LIMIT 0, 50;");
 												
 										$query -> execute();
 										$count = $query -> rowCount();
@@ -317,40 +291,8 @@
 														$nbr++;
 													} 
 																									
-													$query1 = $jiva -> prepare('SELECT lvl, metier FROM experience WHERE metier > ' . $currentJobXp . ';');
-													$query1 -> execute();
-													$row1 = $query1 -> fetch();
-													$query1 -> closeCursor();
-													$currentJobLvl = $row1['lvl'] - 1;
-													
-													if($currentJobLvl != 100) {
-														$query2 = $jiva -> prepare('SELECT lvl, metier FROM experience WHERE lvl = ' . $currentJobLvl . ';');
-														$query2 -> execute();
-														$row2 = $query2 -> fetch();
-														
-														$query3 = $jiva -> prepare('SELECT lvl, metier FROM experience WHERE lvl = ' . ($currentJobLvl + 1) . ';');
-														$query3 -> execute();
-														$row3 = $query3 -> fetch();
-													
-														
-														$xpActuel = $currentJobXp;
-														$xpMax1 = $row2['metier'];
-														$xpMax2 = $row3['metier'];
-														
-														if($xpMax2 - $xpMax1 != 0) {
-															$pourcent = ($xpActuel - $xpMax1) / ($xpMax2 - $xpMax1) * 100;
-															if($pourcent < 10)
-																$pourcent = '0' . substr($pourcent * 100, 0, 1) . '%';
-															else
-																$pourcent = substr($pourcent * 100, 0, 2) . '%';
-														} else {
-															$pourcent = '00';
-														}
-                                                                                                                $query2 -> closeCursor();
-                                                                                                                $query3 -> closeCursor();
-													} else {
-														$pourcent = '100';
-													}												
+													$currentJobLvl = Experience::levelFromXp(Experience::JOB, Experience::MAX_JOB_LEVEL, (int) $currentJobXp);
+													$pourcent = Experience::format(Experience::progress(Experience::JOB, Experience::MAX_JOB_LEVEL, $currentJobLvl, (int) $currentJobXp));
 													
 													$players[$i]['lvl'] = $currentJobLvl;
 													$players[$i]['xp'] = 1;
@@ -358,7 +300,6 @@
 													$i++;
 												}
 												$query -> closeCursor(); 
-												echo '2';
                                                                                                 $players = array_sort($players, 'xp', SORT_DESC);
 												$players = array_sort($players, 'lvl', SORT_DESC);
 												

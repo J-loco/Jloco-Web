@@ -6,7 +6,7 @@ define('TITLE', 'StarLoco');
 date_default_timezone_set('Europe/Paris');
 							
 /** URL **/
-	define('URL_SITE', 'http://127.0.0.1/');
+	define('URL_SITE', 'http://127.0.0.1/dofus/');
 	
 	/** Réseaux sociaux **/
 	define('URL_TWITTER', '');
@@ -31,20 +31,20 @@ date_default_timezone_set('Europe/Paris');
 /** Serveurs **/
 	define('REQUEST_TIMEOUT', '1000');
 	/** Serveur login **/
-	define('LOGIN_IP', getenv('DB_HOST') ?: '127.0.0.1');
+	define('LOGIN_IP', getenv('LOGIN_HOST') ?: '127.0.0.1');
 	define('LOGIN_PORT', '450');
 	define('LOGIN_DB_NAME', 'starloco_login');
 	define('LOGIN_DB_USER', 'root');
 	define('LOGIN_DB_PASS', getenv('DB_PASS') ?: '');
-	$login = newPdo(LOGIN_IP, LOGIN_DB_USER, LOGIN_DB_PASS, LOGIN_DB_NAME);
+	$login = newPdo(getenv('DB_HOST') ?: '127.0.0.1', LOGIN_DB_USER, LOGIN_DB_PASS, LOGIN_DB_NAME);
 	
 	/** Serveur jiva **/
-	define('JIVA_IP', getenv('DB_HOST') ?: '127.0.0.1');
+	define('JIVA_IP', getenv('GAME_HOST') ?: '127.0.0.1');
 	define('JIVA_PORT', '5555');
 	define('JIVA_DB_NAME', 'starloco_game');
 	define('JIVA_DB_USER', 'root');
 	define('JIVA_DB_PASS', getenv('DB_PASS') ?: '');
-	$jiva = newPdo(JIVA_IP, JIVA_DB_USER, JIVA_DB_PASS, JIVA_DB_NAME);
+	$jiva = newPdo(getenv('DB_HOST') ?: '127.0.0.1', JIVA_DB_USER, JIVA_DB_PASS, JIVA_DB_NAME);
 	
 /** Shop **/
 	define('PTS_PER_VOTE', '5');
@@ -78,7 +78,7 @@ define('PAGE_WITHOUT_RIGHT_MENU', 'signin register password');
 /*************************************/
 
 function checkState($ip, $port) {
-	$fp = fsockopen($ip, $port, $errorCode, $errorMessage);
+	$fp = @fsockopen($ip, $port, $errorCode, $errorMessage, 1);
 	if($fp !== false){
 		fclose($fp);
 		return true;

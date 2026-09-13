@@ -9,8 +9,8 @@
 					echo "<script>window.location.replace(\"?page=signin\")</script>";
 					return;
 				} else {
-					$query = $login -> prepare("SELECT * FROM world_accounts WHERE account = '" . $_SESSION['user'] . "';");
-					$query -> execute();
+					$query = $login -> prepare("SELECT * FROM world_accounts WHERE account = ?;");
+					$query -> execute([$_SESSION['user']]);
 					$query -> setFetchMode(PDO:: FETCH_OBJ);
 					$row = $query -> fetch();	
 					$query -> closeCursor();
@@ -37,8 +37,8 @@
 				$option = $row -> showOrHide;				
 				if(isset($_POST['ok1'])) {
 					$option = ($option ? 0 : 1);
-					$query = $login -> prepare("UPDATE world_accounts SET `showOrHide` = " . $option . " WHERE account = '" . $_SESSION['user'] . "';");
-					$query -> execute();
+					$query = $login -> prepare("UPDATE world_accounts SET `showOrHide` = ? WHERE account = ?;");
+					$query -> execute([$option, $_SESSION['user']]);
 					$query -> closeCursor();
 				}
 				?>
@@ -52,8 +52,8 @@
 				$option = $row -> showOrHidePos;				
 				if(isset($_POST['ok2'])) {
 					$option = ($option ? 0 : 1);
-					$query = $login -> prepare("UPDATE world_accounts SET `showOrHidePos` = " . $option . " WHERE account = '" . $_SESSION['user'] . "';");
-					$query -> execute();
+					$query = $login -> prepare("UPDATE world_accounts SET `showOrHidePos` = ? WHERE account = ?;");
+					$query -> execute([$option, $_SESSION['user']]);
 					$query -> closeCursor();
 				}
 				?>
@@ -77,8 +77,8 @@
 							<div class="col-md-12">
 								<section class="section margin-top-20 margin-bottom-20 no-border">
 								<?php				
-								$query = $login -> prepare("SELECT name, class, xp, level, sexe, account, alignement FROM world_players WHERE account = " . $_SESSION['id'] . ";");
-								$query -> execute();
+								$query = $login -> prepare("SELECT name, class, xp, level, sexe, account, alignement FROM world_players WHERE account = ?;");
+								$query -> execute([$_SESSION['id']]);
 								$count = $query -> rowCount();
 								$query -> setFetchMode(PDO:: FETCH_OBJ);
 								$i = 1;
@@ -107,34 +107,7 @@
 											<td class="hidden-sm"><img src ="<?php echo URL_SITE . 'img/dofus/img/class/' . ($row1 -> class * 10 + $row1 -> sexe) . '.png'; ?>" /></td>
 											<td><?php echo $row1 -> level; ?></td>
 											<td> 
-												<?php 
-												if($row1 -> level != 200) {
-													$query2 = $jiva -> prepare('SELECT lvl, perso FROM experience WHERE lvl = ' . $row1 -> level . ';');
-													$query2 -> execute();
-													$query2 -> setFetchMode(PDO:: FETCH_OBJ);
-													$row2 = $query2 -> fetch();
-													$query2 -> closeCursor();
-													
-													$query3 = $jiva -> prepare('SELECT lvl, perso FROM experience WHERE lvl = ' . ($row1 -> level + 1) . ';');
-													$query3 -> execute();
-													$query3 -> setFetchMode(PDO:: FETCH_OBJ);
-													$row3 = $query3 -> fetch();
-													$query3 -> closeCursor();
-													
-													$xpActuel = $row1 -> xp;
-													$xpMax1 = $row2 -> perso;
-													$xpMax2 = $row3 -> perso;
-													
-													$pourcent = ($xpActuel - $xpMax1) / ($xpMax2 - $xpMax1) * 100;
-													
-													if($pourcent < 10)
-														echo '0' . substr($pourcent * 100, 0, 1) . '%';
-													else
-														echo substr($pourcent * 100, 0, 2) . '%';
-												} else {
-													echo '100%';
-												}
-												?>
+												<?php echo Experience::format(Experience::progress(Experience::PLAYER, Experience::MAX_PLAYER_LEVEL, (int) $row1 -> level, (int) $row1 -> xp)); ?>
 											</td>
 											<td class="hidden-sm"><img style="border-radius: 15px; -moz-border-radius: 15px; -webkit-border-radius: 15px;" src="<?php echo URL_SITE . 'img/dofus/img/align/' . $row1 -> alignement . '.jpg'; ?>" /></td>
 										</tr>
@@ -174,8 +147,9 @@
 												$error = 1;
 											} else {
 												$count = false;
-												$query = $login -> prepare("SELECT * FROM `world_accounts` WHERE `reponse` = ?;");
-												$query -> bindParam(1, $answer);
+												$query = $login -> prepare("SELECT 1 FROM `world_accounts` WHERE `account` = ? AND `reponse` = ?;");
+												$query -> bindParam(1, $_SESSION['user']);
+												$query -> bindParam(2, $answer);
 												$query -> execute();
 												$count = $query -> rowCount();
 												$query -> closeCursor();
@@ -280,7 +254,7 @@
 														$query -> execute();
 														$query -> closeCursor();
 														
-														$query = $login -> prepare("INSERT INTO `website_shop_points_purchase` VALUES(?, ?, ?, ?, ?, ?);");
+														$query = $login -> prepare("INSERT INTO `website_shop_points_purchases` VALUES(?, ?, ?, ?, ?, ?);");
 														$query -> bindParam(1, $row -> account);	
 														$query -> bindParam(2, $points);	
 														$query -> bindParam(3, $code);	

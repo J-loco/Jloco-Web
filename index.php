@@ -2,6 +2,7 @@
 session_start();
 
 require_once('configuration/configuration.php');
+require_once('class/Experience.class.php');
 
 if(empty($_GET['page'])) 
 	$_GET['page'] = "index";
