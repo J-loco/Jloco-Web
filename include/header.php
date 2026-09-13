@@ -7,7 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0; user-scalable=0;">
 
-	<title><?php echo TITLE; ?></title>
+	<title><?= e(TITLE) ?></title>
 	
     <!-- Favicon -->
     <link rel="shortcut icon" href="img/favicon.ico">
@@ -36,18 +36,20 @@
 		<div id="top">
 			<div class="container">
 				<ul>
-					<li><a href="?page=index" class="active"> <i class="fa fa-home"></i> Accueil</a></li>
-					<li><a href="<?php echo URL_FORUM; ?>">Forum</a></li>
-					<li><a href="<?php echo URL_BARBOK; ?>">Barbok</a></li>
-					<li><a href="<?php echo URL_TEAMSPEAK; ?>">Teamspeak</a></li>
-					<?php if(isset($_SESSION['user']) && ($_SESSION['data'] -> guid == ADMIN_GUID)) echo '<li><a href="?page=administration">Administration</a></li>'; ?>
+					<li><a href="<?= e(url()) ?>" class="active"> <i class="fa fa-home"></i> Accueil</a></li>
+					<li><a href="<?= e(URL_FORUM) ?>">Forum</a></li>
+					<li><a href="<?= e(URL_BARBOK) ?>">Barbok</a></li>
+					<li><a href="<?= e(URL_TEAMSPEAK) ?>">Teamspeak</a></li>
+					<?php if(is_admin()) { ?>
+						<li><a href="<?= e(url('administration')) ?>">Administration</a></li>
+					<?php } ?>
 				</ul>
 				
 				<?php
-				if(isset($_SESSION['user'])) { ?>
+				if(is_logged_in()) { ?>
 					<div class="btn-group pull-right hidden-xs">
-						<a href="?page=profile" class="btn" ><i class="fa fa-user"></i> Mon compte</a>
-						<a href="?page=signin&ok=2" class="btn" ><i class="fa fa-user"></i> Déconnexion</a>
+						<a href="<?= e(url('profile')) ?>" class="btn" ><i class="fa fa-user"></i> Mon compte</a>
+						<a href="<?= e(url('logout', ['token' => csrf_token()])) ?>" class="btn" ><i class="fa fa-user"></i> Déconnexion</a>
 					</div><?php
 				} else { ?>
 					<div class="btn-group pull-right hidden-xs">
@@ -64,17 +66,12 @@
 		<div class="header">
 			<div class="container">
 				<span class="bar hide"></span>
-				<a href="?page=index" class="logo pull-left"><i class="fa fa-bolt"></i> <?php echo TITLE; ?></a>
-
-				<!--Pub ici 
-				<div class="advertisement advertisement-sm pull-left">
-					<a href="index-2.html"><img src="img/468.png" alt="" /></a>
-				</div>-->
+				<a href="<?= e(url()) ?>" class="logo pull-left"><i class="fa fa-bolt"></i> <?= e(TITLE) ?></a>
 				
 				<ul class="list-inline pull-right hidden-xs">
-					<li><a href="<?php echo URL_TWITTER; ?>" class="btn btn-social-icon btn-circle" data-toggle="tooltip" data-placement="bottom" title="Twitter"><i class="fa fa-twitter"></i></a></li>
-					<li><a href="<?php echo URL_FACEBOOK; ?>" class="btn btn-social-icon btn-circle" data-toggle="tooltip" data-placement="bottom"  title="Facebook"><i class="fa fa-facebook"></i></a></li>
-					<li><a href="<?php echo URL_GOOGLE; ?>" class="btn btn-social-icon btn-circle" data-toggle="tooltip" data-placement="bottom"  title="Google"><i class="fa fa-google-plus"></i></a></li>
+					<li><a href="<?= e(URL_TWITTER) ?>" class="btn btn-social-icon btn-circle" data-toggle="tooltip" data-placement="bottom" title="Twitter"><i class="fa fa-twitter"></i></a></li>
+					<li><a href="<?= e(URL_FACEBOOK) ?>" class="btn btn-social-icon btn-circle" data-toggle="tooltip" data-placement="bottom"  title="Facebook"><i class="fa fa-facebook"></i></a></li>
+					<li><a href="<?= e(URL_GOOGLE) ?>" class="btn btn-social-icon btn-circle" data-toggle="tooltip" data-placement="bottom"  title="Google"><i class="fa fa-google-plus"></i></a></li>
 				</ul>
 			</div>
 		</div>
@@ -84,32 +81,31 @@
 		<nav>
 			<div class="container">
 				<ul>
-					<li><a href="?page=index">Accueil</a></li>
-					<li><a href="<?php echo URL_FORUM; ?>">Forum</a></li>
-					<li><a href="?page=join">Nous rejoindre</a></li>
-					<?php if(isset($_SESSION['user'])) {
-								echo '<li><a href="?page=shop">Boutique</a></li>';
-							} ?>
+					<li><a href="<?= e(url()) ?>">Accueil</a></li>
+					<li><a href="<?= e(URL_FORUM) ?>">Forum</a></li>
+					<li><a href="<?= e(url('join')) ?>">Nous rejoindre</a></li>
+					<?php if(is_logged_in()) { ?>
+						<li><a href="<?= e(url('shop')) ?>">Boutique</a></li>
+					<?php } ?>
 					<li class="dropdown">
 						<a href="#">Autres<i class="ion-chevron-down"></i></a>
 						<!-- dropdown menu -->
 						<ul class="dropdown-menu default">
-							<li><a href="?page=ladder">Classement</a></li>
-							<li><a href="?page=viewdrop">Visualisateur de drop</a></li>							
+							<li><a href="<?= e(url('ladder')) ?>">Classement</a></li>
+							<li><a href="<?= e(url('viewdrop')) ?>">Visualisateur de drop</a></li>
 						</ul>
 					</li>
 				</ul>
-				<!-- search -->
 				<div class="pull-right">
 					<ul>
 						<?php
-						if(isset($_SESSION['user'])) { ?>
-							<li><a href="?page=profile">Mon compte </a></li>
-							<li><a href="?page=signin&ok=2">Déconnexion</a></li>
+						if(is_logged_in()) { ?>
+							<li><a href="<?= e(url('profile')) ?>">Mon compte </a></li>
+							<li><a href="<?= e(url('logout', ['token' => csrf_token()])) ?>">Déconnexion</a></li>
 							<?php
 						} else { ?>
-							<li><a href="?page=signin">Connexion</a></li>
-							<li><a href="?page=register">Inscription</a></li>
+							<li><a href="<?= e(url('signin')) ?>">Connexion</a></li>
+							<li><a href="<?= e(url('register')) ?>">Inscription</a></li>
 						<?php
 						} ?>
 					</ul>
@@ -122,3 +118,4 @@
 	<div class="container">
 		<!-- wrapper-->
 		<div id="wrapper">
+			<?php foreach(take_flashes() as $flash) echo alert($flash['type'], $flash['message']); ?>

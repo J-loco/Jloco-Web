@@ -8,7 +8,7 @@
 }(document, 'script', 'facebook-jssdk'));</script>
 <!-- sidebar -->
 			<div class="sidebar">
-				<a href="<?php echo URL_SITE . '?page=vote'; ?>" class="btn btn-warning btn-block btn-md btn-bold margin-bottom-15">Vote&nbsp; <i class="fa fa-sign-in"></i> &nbsp;RPG-Paradize</a>
+				<a href="<?= e(url('vote')) ?>" class="btn btn-warning btn-block btn-md btn-bold margin-bottom-15">Vote&nbsp; <i class="fa fa-sign-in"></i> &nbsp;RPG-Paradize</a>
 				
 				<!-- section -->
 				<div class="section section-default">
@@ -66,9 +66,8 @@
 				                            $query -> execute();
 											$query -> setFetchMode(PDO:: FETCH_OBJ);
 											$server = $query -> fetch();
-											$uptime = convertTimestampToUptime($server -> uptime);
 											$query -> closeCursor();
-											echo "Uptime : " . $uptime;
+											echo "Uptime : " . ($server ? e(convertTimestampToUptime((int) $server -> uptime)) : '-');
 											?>
 										</div>
 									</div>
@@ -199,54 +198,28 @@
 								$query -> execute();
 								$query -> setFetchMode(PDO:: FETCH_OBJ);
 								
-								$i = 1;							
+								$position = $jiva -> prepare('SELECT m.mappos, s.name FROM maps m LEFT JOIN subarea_data s ON s.id = SUBSTRING_INDEX(m.mappos, ',', -1) WHERE m.id = ?;');
 								while($row = $query -> fetch()) {
-									if($i > 5) break;
-					
-									$name = $row -> name;
-									$class = $row -> class;
-									$sexe = $row -> sexe;
-									$level = $row -> level;
-									$logged = $row -> logged;
-									
-					
-									$map = $jiva -> prepare('SELECT id, mappos FROM maps WHERE id = ?;');
-									$map -> execute([$row -> map]);
-									$map -> setFetchMode(PDO:: FETCH_OBJ);
-									$map_row = $map -> fetch();	
-									$map -> closeCursor();
-									
-									$mappos = explode(",", $map_row -> mappos);
-									
-									$sub = $jiva -> prepare('SELECT id, name FROM subarea_data WHERE id = ?;');
-									$sub -> execute([$mappos[2]]);
-									$sub -> setFetchMode(PDO:: FETCH_OBJ);
-									$sub_row = $sub -> fetch();	
-									$sub -> closeCursor();
-									
-									$subName = $sub_row -> name;
-									
+									$position -> execute([$row -> map]);
+									$place = $position -> fetch(PDO::FETCH_OBJ);
+									$position -> closeCursor();
+									$coordinates = $place ? explode(',', $place -> mappos) : [];
 									?><li class="no-padding clearfix">
-										<h4 class="padding-15"><a href="#"><?php echo $name . ' - Niveau ' . $level; ?> </a></h4>
-					
+										<h4 class="padding-15"><a href="#"><?= e($row -> name . ' - Niveau ' . $row -> level) ?> </a></h4>
+
 										<div class="padding-15">
-											<p>Un satané <b><?php echo convertClassIdToString($class, $sexe); ?></b> c'est attaqué à un jeune aventurier sans défense, ni compagnie.
-											Cet <?php if($sexe == 0) echo 'homme'; else echo 'femme'; ?> mérite une correction ! </p>
+											<p>Un satané <b><?= e(convertClassIdToString($row -> class, $row -> sexe)) ?></b> c'est attaqué à un jeune aventurier sans défense, ni compagnie.
+											Cet <?= $row -> sexe == 0 ? 'homme' : 'femme' ?> mérite une correction ! </p>
 											<p>
-											<?php 
-											switch($logged) {
-											case 0:
+											<?php
+											if($row -> logged == 1 && $place && isset($coordinates[1]))
+												echo "Cet personne a été récement vue à travers " . e($place -> name) . " ( <b>" . e($coordinates[0]) . " ; " . e($coordinates[1]) . "</b>) !";
+											else
 												echo "Nous ne possédons pour l'instant aucune information concernant sa position..";
-												break;
-											case 1:
-												echo "Cet personne a été récement vue à travers " . $subName . " ( <b>" . $mappos[0] ." ; " . $mappos[1] . "</b>) !";
-												break;
-											} ?>
+											?>
 											</p>
 										</div>
 									</li><?php
-									
-									$i++;
 								}
 								$query -> closeCursor();	
 								?>

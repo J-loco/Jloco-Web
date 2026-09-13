@@ -83,59 +83,47 @@
 							</div>
 							<ul class="timeline">
 								<?php
-								$i = 0;
-								
-								$query = $connection -> prepare('SELECT COUNT(*) FROM `website_timeline_news`;');
-								$query -> execute();
-								$row = $query -> fetch();
-								$query -> closeCursor();
+								$newsCount = (int) $connection -> query('SELECT COUNT(*) FROM `website_timeline_news`;') -> fetchColumn();
+								$pageCount = max(1, (int) ceil($newsCount / 10));
+								$page = isset($_GET['num']) && ctype_digit((string) $_GET['num']) ? min(max(1, (int) $_GET['num']), $pageCount) : 1;
 
-								$moyenne = ceil($row['COUNT(*)'] / 10);
-
-								if(isset($_GET['num']) && is_numeric($_GET['num']))
-									$page = $_GET['num'];
-								else
-									$page = 1;
-									
-								$start = ($page - 1) * 10;
-								$query = $connection -> query("SELECT * FROM `website_timeline_news` ORDER BY id DESC LIMIT $start, 10;");
+								$query = $connection -> prepare('SELECT * FROM `website_timeline_news` ORDER BY id DESC LIMIT :start, 10;');
+								$query -> bindValue(':start', ($page - 1) * 10, PDO::PARAM_INT);
 								$query -> execute();
-								$query -> setFetchMode(PDO:: FETCH_OBJ);
-								
-								while ($news = $query->fetch()) { ?>
+
+								foreach($query -> fetchAll(PDO::FETCH_OBJ) as $i => $news) { ?>
 									<li <?php if($i % 2) echo 'class="timeline-inverted"'; ?>>
 										<div class="timeline-badge primary"></div>
 										<div class="timeline-panel">
 											<div class="timeline-heading">
-												<h4 class="padding-15"><a href="#"><?php echo $news -> title; ?></a></h4>
-												<?php 
-												if(!empty($news -> img))
-													echo '<img class="img-responsive full-width" src="' . $news -> img . '" alt="" />';
-												?>
+												<h4 class="padding-15"><a href="#"><?= e($news -> title) ?></a></h4>
+												<?php if(!empty($news -> img)) { ?>
+													<img class="img-responsive full-width" src="<?= e($news -> img) ?>" alt="" />
+												<?php } ?>
 											</div>
 											<div class="timeline-body">
-												<p><?php echo $news -> content; ?></p>
+												<?php // Written by an administrator: HTML is allowed on purpose. ?>
+												<p><?= $news -> content ?></p>
 											</div>
 											<div class="timeline-footer">
-												<i class="ion-android-calendar"></i> <?php echo convertDateToString($news -> date); ?>
-												<a class="pull-right"><i class="ion-android-forums"></i>0</a></a>
+												<i class="ion-android-calendar"></i> <?= e(convertDateToString((string) $news -> date)) ?>
+												<a class="pull-right"><i class="ion-android-forums"></i>0</a>
 											</div>
 										</div>
 									</li>
 								<?php
-									$i++;
 								}
 								?>
-								
+
 								<li class="clearfix" style="float: none;"></li>
-							</ul>	
-							
+							</ul>
+
 							<center>
 								<div class="btn-group">
-									<a href=<?php if($page - 1 > 0) echo "?num=" . ($page - 1); else echo "#"; ?> class="btn btn-sm btn-default"><i class="fa fa-chevron-left"></i></a>
-									<div class="btn btn-sm btn-default"><?php echo $page . " / " . $moyenne; ?></div>
-									<a href=<?php if($page + 1 <= $moyenne) echo "?num=" . ($page + 1); else echo "#"; ?> class="btn btn-sm btn-default"><i class="fa fa-chevron-right"></i></a>
-								</div>	
+									<a href="<?= $page > 1 ? e(url('index', ['num' => $page - 1])) : '#' ?>" class="btn btn-sm btn-default"><i class="fa fa-chevron-left"></i></a>
+									<div class="btn btn-sm btn-default"><?= $page . " / " . $pageCount ?></div>
+									<a href="<?= $page < $pageCount ? e(url('index', ['num' => $page + 1])) : '#' ?>" class="btn btn-sm btn-default"><i class="fa fa-chevron-right"></i></a>
+								</div>
 							</center>
 						</div>
 					</div>

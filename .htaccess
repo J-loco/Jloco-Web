@@ -1,0 +1,13 @@
+# StarLoco-Web (docs/refactor, Phase 0)
+Options -Indexes
+
+# Repository metadata, docs and build files are not part of the site.
+RedirectMatch 404 /\.git
+<FilesMatch "(^\.|\.md$|^Dockerfile$|^composer\.(json|lock)$)">
+    Require all denied
+</FilesMatch>
+
+# The captcha is disabled until GD is installed (Phase 1).
+<Files "captcha.php">
+    Require all denied
+</Files>

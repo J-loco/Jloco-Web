@@ -24,10 +24,10 @@
 		<div class="footer-bottom" style="margin-top:0px!important;">
 			<div class="container">
 				<ul class="pull-left hidden-xs">
-					<li>2014 - 2015 &copy; <?php echo TITLE; ?>. Tous droits réservés.&nbsp;&nbsp;&nbsp;</li>		
+					<li>2014 - 2015 &copy; <?= e(TITLE) ?>. Tous droits réservés.&nbsp;&nbsp;&nbsp;</li>		
 				</ul>
 				<ul class="pull-left hidden-xs">
-					<li><a href="?page=cgu">Conditions générales d'utilisation</a></li>
+					<li><a href="<?= e(url('cgu')) ?>">Conditions générales d'utilisation</a></li>
 				</ul>
 				
 				<ul class="pull-right hidden-xs">
@@ -47,7 +47,8 @@
 			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
 			<h4 class="modal-title" id="signin-title"><i class="fa fa-sign-in"></i> Connexion</h4>
 		  </div>
-			<form method="post" action="#">
+			<form method="post" action="<?= e(url('signin')) ?>">
+				<?= csrf_field() ?>
 				<div class="modal-body modal-padding">
 					<div class="login">
 						<div class="row">
@@ -60,8 +61,8 @@
 						<div class="row">
 							<div class="col-md-6">
 								<div class="checkbox margin-top-20 no-margin-bottom">
-									<input type="checkbox" name="checkbox" checked="checked"> 
-									<label for="checkbox">Se souvenir de moi</label>
+									<input type="checkbox" id="remember-modal" name="remember" checked="checked"> 
+									<label for="remember-modal">Se souvenir de moi</label>
 								</div>
 							</div>
 						</div>	   
@@ -87,44 +88,45 @@
 					<h4 class="modal-title" id="register-title"><i class="fa fa-user"></i> Inscription</h4>
 				</div>
 				<div class="alert alert-warning no-border no-margin"><i class="fa fa-info"></i> Tous les champs sont obligatoires</div>
-				<form autocomplete="off" method="POST" action="?page=register">	
+				<form autocomplete="off" method="POST" action="<?= e(url('register')) ?>">
+					<?= csrf_field() ?>	
 					<div class="modal-body">
 						<div class="row">
 							<div class="control-group col-md-6 col-xs-12">
 								<label class="control-label" for="username">Nom de compte</label>
 								<div class="controls margin-top-5">
-									<input type="text" class="form-control" id="username" placeholder="" required>
+									<input type="text" class="form-control" id="username" name="username" placeholder="" required>
 								</div>
 							</div>
 							<div class="control-group col-md-6 col-xs-12">
 								<label class="control-label" for="email">Email</label>
 								<div class="controls margin-top-5">
-									<input type="text" class="form-control" id="email" placeholder="" required>
+									<input type="text" class="form-control" id="email" name="email" placeholder="" required>
 								</div>
 							</div>
 							<div class="control-group col-md-6 col-xs-12 margin-top-10">
 								<label class="control-label" for="password">Mot de passe</label>
 								<div class="controls margin-top-5">
-									<input type="password" class="form-control" id="password" placeholder="" required>
+									<input type="password" class="form-control" id="password" name="password" placeholder="" required>
 								</div>
 							</div>
 							<div class="control-group col-md-6 col-xs-12 margin-top-10">
 								<label class="control-label" for="repeat-password">Confirmation du mot de passe</label>
 								<div class="controls margin-top-5">
-									<input type="password" class="form-control" id="repeat-password" placeholder="" required>
+									<input type="password" class="form-control" id="repeat-password" name="repeat-password" placeholder="" required>
 								</div>
 							</div>
 
 							<div class="control-group col-md-6 col-xs-12 margin-top-10">
 								<label class="control-label" for="question">Question secrète</label>
 								<div class="controls margin-top-5">
-									<input type="text" class="form-control" id="question" placeholder="" required>
+									<input type="text" class="form-control" id="question" name="question" placeholder="" required>
 								</div>
 							</div>
 							<div class="control-group col-md-6 col-xs-12 margin-top-10">
 								<label class="control-label" for="answer">Réponse secrète</label>
 								<div class="controls margin-top-5">
-									<input type="text" class="form-control" id="answer" placeholder="" required>
+									<input type="text" class="form-control" id="answer" name="answer" placeholder="" required>
 								</div>
 							</div>
 							
@@ -136,7 +138,7 @@
 								</div>
 							
 								<div class="controls margin-top-5">
-									<input type="text" class="form-control" id="security-password" placeholder="" required>
+									<input type="text" class="form-control" id="security-password" name="security-password" placeholder="" required>
 								</div>
 							</div>
 						</div>
@@ -145,8 +147,8 @@
 					<div class="modal-footer">
 						<a href="#" class="btn btn-warning pull-left" data-dismiss="modal">Retour</a>
 						<div style="margin-left: 10px;" class="checkbox pull-left no-padding no-margin-bottom margin-top-5">
-							<input type="checkbox" id="checkbox1"> 
-							<label for="checkbox1">J'accepte les <a href="?page=cgu">CGU</a>.</label>
+							<input type="checkbox" id="checkbox-register" name="checkbox"> 
+							<label for="checkbox-register">J'accepte les <a href="<?= e(url('cgu')) ?>">CGU</a>.</label>
 						</div>
 						<button type="submit" name="register" class="btn btn-success pull-right">S'inscrire</button>
 					</div>

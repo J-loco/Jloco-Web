@@ -1,6 +1,6 @@
 			<div class="leftside">
 					<ol class="breadcrumb">
-						<li><a href="?page=index">Accueil</a></li>
+						<li><a href="<?= e(url()) ?>">Accueil</a></li>
 						<li class="active">Nous rejoindre</li>
 					</ol>	
 				<div class="row">
@@ -10,7 +10,7 @@
 							<div class="section section-default padding-25">
 								<p class="no-margin">
 									Tout d'abord, et avant toute utilisation de nos systèmes/services, nous vous invitons à lire les 
-									<a href="?page=cgu" target="_blank"><span class="text-danger">conditions générales d'utilisation</span></a>.<br /><br />
+									<a href="<?= e(url('cgu')) ?>" target="_blank"><span class="text-danger">conditions générales d'utilisation</span></a>.<br /><br />
 								
 									<h5>1<sup>er</sup>&nbsp;&nbsp;&nbsp;étape :</h5><br />
 									Dès lors que vous souhaiterez jouer sur nos serveurs, vous devrez utiliser un compte propre à nos système.
@@ -20,7 +20,7 @@
 									
 									Une fois l'inscription effectué, assurez-vous de posséder le client Dofus 1.29.1, si ce n'est pas le cas, il est neccésaire de l'installer sur votre ordinateur pour les prochaines étapes à suivre.<br /><br />
 									
-									<a href="<?php echo URL_LAUNCHER_1_29; ?>" class="btn btn-danger btn-block btn-md btn-bold margin-bottom-15"><i class="ion-social-windows"></i>  <i class="ion-ios7-cloud-download"></i> Télécharger le client</a><br /><br />
+									<a href="<?= e(URL_LAUNCHER_1_29) ?>" class="btn btn-danger btn-block btn-md btn-bold margin-bottom-15"><i class="ion-social-windows"></i>  <i class="ion-ios7-cloud-download"></i> Télécharger le client</a><br /><br />
 									
 									<h5>2<sup>er</sup>&nbsp;&nbsp;&nbsp;étape :</h5><br />
 									
@@ -29,13 +29,13 @@
 									
 									<br /><br />
 									
-									<a href="<?php echo URL_INSTALLATEUR; ?>" class="btn btn-danger btn-block btn-md btn-bold margin-bottom-15"><i class="ion-social-windows"></i>  <i class="ion-ios7-cloud-download"></i> Télécharger l'installateur</a><br /><br />
+									<a href="<?= e(URL_INSTALLATEUR) ?>" class="btn btn-danger btn-block btn-md btn-bold margin-bottom-15"><i class="ion-social-windows"></i>  <i class="ion-ios7-cloud-download"></i> Télécharger l'installateur</a><br /><br />
 									
 									Pour les utilisateurs autres que Windows, nous vous mettons à disposition le téléchargement de la configuration uniquement afin de nous rejoindre sans problème :
 									
 									<br /><br />
 									
-									<a href="<?php echo URL_CONFIG; ?>" class="btn btn-danger btn-block btn-md btn-bold margin-bottom-15" download="config.xml"><i class="ion-social-apple"></i> <i class="ion-social-tux"></i> <i class="ion-ios7-cloud-download"></i> Télécharger la configuration</a><br /><br />
+									<a href="<?= e(URL_CONFIG) ?>" class="btn btn-danger btn-block btn-md btn-bold margin-bottom-15" download="config.xml"><i class="ion-social-apple"></i> <i class="ion-social-tux"></i> <i class="ion-ios7-cloud-download"></i> Télécharger la configuration</a><br /><br />
 									
 									<br>
 									

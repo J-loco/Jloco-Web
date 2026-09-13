@@ -1,77 +1,63 @@
 <?php
-session_start();
+// Buffer the page so any include can still redirect (send headers) after output started.
+ob_start();
 
-require_once('configuration/configuration.php');
-require_once('class/Experience.class.php');
+require_once __DIR__ . '/include/bootstrap.php';
 
-if(empty($_GET['page'])) 
-	$_GET['page'] = "index";
-	
-if(!file_exists("pages/" . $_GET['page'] . ".php")) {
-	include("pages/404.php");
-	echo "<meta http-equiv='refresh' content='3; url=" . URL_SITE . "'> ";
+$pages = require __DIR__ . '/include/routes.php';
+$pageName = isset($_GET['page']) && is_string($_GET['page']) && $_GET['page'] !== '' ? $_GET['page'] : 'index';
+
+// CSRF: every POST must carry the session token. The Dedipass widget builds its own form,
+// so it cannot; its codes are verified server-side against the Dedipass API instead.
+$isDedipassCallback = $pageName === 'profile' && isset($_POST['code'], $_POST['rate']);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$isDedipassCallback && !csrf_valid($_POST['_csrf'] ?? null)) {
+	flash('warning', 'Ta session a expiré, merci de réessayer.');
+	redirect($_SERVER['REQUEST_URI'] ?? url());
+}
+
+// Login (sign-in page and the modal in the footer both post here).
+if (isset($_POST['login'])) {
+	if (throttle_blocked($login, 'login')) {
+		flash('danger', throttle_message());
+		redirect(url('signin'));
+	}
+
+	$account = auth_check_credentials($login, (string) ($_POST['username'] ?? ''), (string) ($_POST['password'] ?? ''));
+	if ($account === null) {
+		throttle_fail($login, 'login');
+		flash('danger', 'Tes identifiants sont incorrects !');
+		redirect(url('signin'));
+	}
+
+	throttle_clear($login, 'login');
+	auth_login($account);
+	if (isset($_POST['remember']))
+		remember_issue($login, $account -> guid);
+
+	flash('success', 'La connexion a été effectuée avec succès !');
+	redirect(url());
+}
+
+if ($pageName === 'logout') {
+	if (csrf_valid($_GET['token'] ?? null)) {
+		auth_logout($login);
+		flash('info', 'Tu t\'es déconnecté avec succès !');
+	}
+	redirect(url());
+}
+
+if (!is_logged_in() && ($account = remember_restore($login)) !== null)
+	auth_login($account);
+
+if (!array_key_exists($pageName, $pages)) {
+	http_response_code(404);
+	include __DIR__ . '/pages/404.php';
+	echo "<meta http-equiv='refresh' content='3; url=" . e(url()) . "'>";
 	return;
 }
-	
-if(isset($_POST['login'])) {
-	$username = $_POST['username'];
-    $password = hash('SHA512', md5($_POST['password']));
-	$query = $login -> prepare("SELECT guid, pass, account FROM world_accounts WHERE account = ? AND pass = ?;");
-	$query -> bindParam(1, $username);
-	$query -> bindParam(2, $password);
-	$query -> execute();
-	$ok = $query -> rowCount();
-	$query -> setFetchMode(PDO:: FETCH_OBJ);
-	$account = $query -> fetch();
-	$query -> closeCursor();
-	
-	if($ok) {
-		$_GET['page'] = "signin";
-		$_SESSION['user'] = $username;
-		$_SESSION['data'] = $account;
-		
-		$_SESSION['id'] = $account -> guid;
-		
-		if(isset($_POST['checkbox'])) {
-			setcookie("user", $username, time()+3600 * 24 * 7); 
-			setcookie("pass", hash('SHA512', md5($password)), time()+3600 * 24 * 7); 
-			echo "<script>window.location.replace(\"?page=signin&ok=5\")</script>";
-		return;
-		}
-		echo "<script>window.location.replace(\"?page=signin&ok=1\")</script>";
-		return;
-	} else {
-		echo "<script>window.location.replace(\"?page=signin&ok=0\")</script>";
-		return;
-	}
-} else if(!isset($_SESSION['user']) && isset($_COOKIE["user"])) {
-	$username = $_COOKIE["user"]; 
-	$hash = $_COOKIE["pass"]; 
-	
-	$query = $login -> prepare("SELECT guid, pass, account FROM world_accounts WHERE account = ?;");
-	$query -> bindParam(1, $username);
-	$query -> execute();
-	$ok = $query -> rowCount();
-	$query -> setFetchMode(PDO:: FETCH_OBJ);
-	$account = $query -> fetch();
-	$query -> closeCursor();
-	if($ok) {
-		if(($account -> pass) == $hash) {
-			$_SESSION['user'] = $username;
-			$_SESSION['data'] = $account;
-			$_SESSION['id'] = $account -> guid;
-		}
-	}
-	$page = "pages/" . $_GET['page'] . ".php";	
-} else {
-	$page = "pages/" . $_GET['page'] . ".php";
-}
 
-include('include/header.php');
-include($page);
-
-if(!(strpos( PAGE_WITHOUT_RIGHT_MENU, $_GET['page']) !== false))
-	include('include/rightmenu.php'); 
-	
-include('include/footer.php');
-?>
+include __DIR__ . '/include/header.php';
+include __DIR__ . '/pages/' . $pageName . '.php';
+if ($pages[$pageName])
+	include __DIR__ . '/include/rightmenu.php';
+include __DIR__ . '/include/footer.php';

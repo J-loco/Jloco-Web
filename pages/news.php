@@ -1,6 +1,6 @@
 			<div class="leftside">
 					<ol class="breadcrumb">
-						<li><a href="?page=index">Accueil</a></li>
+						<li><a href="<?= e(url()) ?>">Accueil</a></li>
 						<li class="active">News</li>
 					</ol>	
 				<div class="row">
@@ -10,7 +10,8 @@
 							
 								<?php
 								require_once("./include/rsslib.php");
-								echo RSS_Display(URL_RSS_NEWS_IPB, 15, false, true);
+								$feed = RSS_Display(URL_RSS_NEWS_IPB, 15, false, true);
+								echo $feed !== '' ? $feed : alert('info', 'Aucune nouvelle du forum pour le moment.');
 								?>
 							
 							

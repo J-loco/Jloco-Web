@@ -6,7 +6,9 @@ define('TITLE', 'StarLoco');
 date_default_timezone_set('Europe/Paris');
 							
 /** URL **/
-	define('URL_SITE', 'http://127.0.0.1/dofus/');
+	define('URL_SITE', rtrim(getenv('APP_URL') ?: 'http://127.0.0.1/dofus/', '/') . '/');
+	define('APP_DEBUG', getenv('APP_DEBUG') === '1');
+	ini_set('display_errors', APP_DEBUG ? '1' : '0');
 	
 	/** Réseaux sociaux **/
 	define('URL_TWITTER', '');
@@ -48,7 +50,9 @@ date_default_timezone_set('Europe/Paris');
 	
 /** Shop **/
 	define('PTS_PER_VOTE', '5');
-	define('CLOUDFLARE_ENABLE', true);
+	// Only enable behind Cloudflare: otherwise anyone can forge CF-Connecting-IP.
+	define('TRUST_CLOUDFLARE', getenv('TRUST_CLOUDFLARE') === '1');
+	define('DEDIPASS_PUBLIC_KEY', getenv('DEDIPASS_PUBLIC_KEY') ?: '');
 	
 /** Mysql **/
 	/** Variables **/
@@ -56,7 +60,7 @@ date_default_timezone_set('Europe/Paris');
 	define('DB_NAME', 'starloco_login');
 	define('DB_USER', 'root');
 	define('DB_PASS', getenv('DB_PASS') ?: '');
-	$connection = newPdo(DB_IP, DB_USER, DB_PASS, DB_NAME);
+	$connection = $login; // same database as $login, no need for a second connection
 	
 	/** Fonction **/ 
 	function newPdo($ip, $user, $pass, $db) {
@@ -66,7 +70,9 @@ date_default_timezone_set('Europe/Paris');
 			$connection -> exec('SET NAMES utf8');    
 			return $connection;
 		} catch(Exception $e) {
-			die('Error : ' . $e -> getMessage());
+			error_log('StarLoco-Web: cannot connect to ' . $db . ': ' . $e -> getMessage());
+			http_response_code(503);
+			die(APP_DEBUG ? 'Error : ' . $e -> getMessage() : 'Service temporairement indisponible.');
 		}	
 	}
 

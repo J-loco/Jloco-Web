@@ -67,8 +67,10 @@ function RSS_Retrieve($url) {
 	$context = stream_context_create($opts);
 	libxml_set_streams_context($context);
 	
+	$RSS_Content = array();
 	$doc  = new DOMDocument();
-	$doc->load($url);
+	if($url === '' || !@$doc->load($url))
+		return;
 	
 	$channels = $doc->getElementsByTagName("channel");
 	$RSS_Content = array();
@@ -86,8 +88,7 @@ function RSS_Display($url, $size = 15, $site = 0) {
 	$site = (intval($site) == 0) ? 1 : 0;
 
 	RSS_Retrieve($url);
-	if($size > 0)
-		$recents = array_slice($RSS_Content, $site, $size + 1 - $site);
+	$recents = $size > 0 ? array_slice($RSS_Content, $site, $size + 1 - $site) : array();
 
 	$i = 0;
 		
@@ -102,9 +103,10 @@ function RSS_Display($url, $size = 15, $site = 0) {
 			if(strlen($description) > 250)  { 
 				$description = substr($description, 0, 250) . '..';
 			}
-			$description = str_replace("<p>&nbsp;</p>", "", $description);
-			$description = str_replace("<strong>", "", $description);
-			$description = str_replace("</strong>", "", $description);
+			// External feed: never trust its markup.
+			$description = e(html_entity_decode(strip_tags($description), ENT_QUOTES, 'UTF-8'));
+			$title = e($title);
+			$link = e(preg_match('#^https?://#i', $link) ? $link : '#');
 			
 			$page .= 
 			'<section>

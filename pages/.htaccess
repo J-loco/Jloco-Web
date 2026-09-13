@@ -1,1 +1,2 @@
-Denied from all
+# Internal code: never served over HTTP (docs/refactor, Phase 0).
+Require all denied
