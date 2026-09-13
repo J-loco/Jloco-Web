@@ -9,14 +9,14 @@ use StarLoco\Web\Security\Session;
 /**
  * Image captcha for registration. The expected code lives in the session and is single use.
  */
-final class Captcha
+final readonly class Captcha
 {
-    private const SESSION_KEY = '_captcha';
+    private const string SESSION_KEY = '_captcha';
     // No 0/O, 1/I/L: easy to confuse in a small image.
-    private const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
-    private const LENGTH = 6;
+    private const string ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+    private const int LENGTH = 6;
 
-    public function __construct(private readonly Session $session)
+    public function __construct(private Session $session)
     {
     }
 

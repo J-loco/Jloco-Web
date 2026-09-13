@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace StarLoco\Web\Service;
 
 use StarLoco\Web\Config;
+use StarLoco\Web\Model\GameServerStatus;
 use StarLoco\Web\Repository\PlayerRepository;
 use StarLoco\Web\Repository\ServerRepository;
 
@@ -33,23 +34,24 @@ final class ServerStatus
         return $this->probe($this->config->gameServerHost, $this->config->gameServerPort);
     }
 
-    /** @return object{name: string, online: bool, players: int, uptime: ?string} */
-    public function gameServer(): object
+    public function gameServer(): GameServerStatus
     {
         $server = $this->servers->find($this->config->gameServerId);
         $online = $this->gameOnline();
-        return (object) [
-            'name' => $server->name ?? $this->config->siteName,
-            'online' => $online,
-            'players' => $this->players->countOnline($this->config->gameServerId),
-            'uptime' => $online && $server !== null && (int) $server->uptime > 0 ? self::formatUptime((int) $server->uptime) : null,
-        ];
+
+        return new GameServerStatus(
+            name: $server->name ?? $this->config->siteName,
+            online: $online,
+            players: $this->players->countOnline($this->config->gameServerId),
+            uptime: $online && $server !== null && $server->startedAtMs > 0 ? self::formatUptime($server->startedAtMs) : null,
+        );
     }
 
-    /** world_servers.uptime is the start time in milliseconds. */
-    public static function formatUptime(int $startedAtMs): string
+    /** Time since $startedAtMs (milliseconds), e.g. "2j 3h 15m". */
+    public static function formatUptime(int $startedAtMs, ?int $nowMs = null): string
     {
-        $seconds = max(0, intdiv((int) round(microtime(true) * 1000) - $startedAtMs, 1000));
+        $nowMs ??= (int) round(microtime(true) * 1000);
+        $seconds = max(0, intdiv($nowMs - $startedAtMs, 1000));
         return sprintf('%dj %dh %dm', intdiv($seconds, 86400), intdiv($seconds % 86400, 3600), intdiv($seconds % 3600, 60));
     }
 

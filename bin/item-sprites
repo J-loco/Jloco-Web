@@ -1,0 +1,28 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * Writes var/item-sprites.tsv: the "type<TAB>skin" of every item template sold in the shop.
+ * The starloco_web_sprites service then converts those client sprites to PNG
+ * (docker/export-item-images.sh). Uses the portal database settings (DB_*).
+ */
+
+declare(strict_types=1);
+
+use StarLoco\Web\Config;
+use StarLoco\Web\Database;
+use StarLoco\Web\Repository\ShopRepository;
+
+require __DIR__ . '/../config/autoload.php';
+
+$sprites = new ShopRepository(new Database(Config::fromEnvironment()))->sprites();
+
+$directory = dirname(__DIR__) . '/var';
+if (!is_dir($directory) && !mkdir($directory, 0o775, true) && !is_dir($directory)) {
+    fwrite(STDERR, "Cannot create $directory\n");
+    exit(1);
+}
+
+$lines = array_map(static fn (array $sprite): string => $sprite['type'] . "\t" . $sprite['skin'], $sprites);
+file_put_contents($directory . '/item-sprites.tsv', implode("\n", $lines) . "\n");
+fwrite(STDOUT, count($lines) . " sprites listed in var/item-sprites.tsv\n");

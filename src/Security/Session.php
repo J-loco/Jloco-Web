@@ -9,11 +9,11 @@ use StarLoco\Web\Config;
 /**
  * Hardened PHP session + one-shot flash messages.
  */
-final class Session
+final readonly class Session
 {
-    private const FLASH_KEY = '_flash';
+    private const string FLASH_KEY = '_flash';
 
-    public function __construct(private readonly Config $config)
+    public function __construct(private Config $config)
     {
     }
 
@@ -31,7 +31,11 @@ final class Session
         session_start();
     }
 
-    /** Cookie attributes shared by the session and remember-me cookies. */
+    /**
+     * Cookie attributes shared by the session and remember-me cookies.
+     *
+     * @return array{expires: int, path: string, secure: bool, httponly: bool, samesite: 'Lax'}
+     */
     public function cookieOptions(int $expires): array
     {
         return [

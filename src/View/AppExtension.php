@@ -9,10 +9,12 @@ use DateTimeInterface;
 use IntlDateFormatter;
 use StarLoco\Web\Config;
 use StarLoco\Web\Container;
-use StarLoco\Web\Game\Character;
+use StarLoco\Web\Game\Character as CharacterLabels;
 use StarLoco\Web\Game\Experience;
 use StarLoco\Web\Game\ItemEffects;
 use StarLoco\Web\Http\Router;
+use StarLoco\Web\Model\Character;
+use StarLoco\Web\Model\ShopItem;
 use StarLoco\Web\Security\Csrf;
 use StarLoco\Web\Security\Session;
 use StarLoco\Web\Service\AuthService;
@@ -27,6 +29,8 @@ use Twig\TwigFunction;
  */
 final class AppExtension extends AbstractExtension
 {
+    private const string PUBLIC_DIR = __DIR__ . '/../../public/';
+
     public function __construct(private readonly Container $container)
     {
     }
@@ -34,39 +38,46 @@ final class AppExtension extends AbstractExtension
     public function getFunctions(): array
     {
         return [
-            new TwigFunction('url', fn (string $name, array $params = []) => $this->container->get(Router::class)->url($name, $params)),
+            new TwigFunction('url', fn (string $name, array $params = []): string => $this->container->get(Router::class)->url($name, $params)),
             new TwigFunction('asset', $this->asset(...)),
-            new TwigFunction('csrf_field', fn () => new Markup('<input type="hidden" name="' . Csrf::FIELD . '" value="' . $this->container->get(Csrf::class)->token() . '">', 'UTF-8')),
+            new TwigFunction('csrf_field', fn (): Markup => new Markup('<input type="hidden" name="' . Csrf::FIELD . '" value="' . $this->container->get(Csrf::class)->token() . '">', 'UTF-8')),
             new TwigFunction('current_account', fn () => $this->container->get(AuthService::class)->account()),
-            new TwigFunction('is_admin', fn () => $this->container->get(AuthService::class)->isAdmin()),
-            new TwigFunction('flashes', fn () => $this->container->get(Session::class)->takeFlashes()),
+            new TwigFunction('is_admin', fn (): bool => $this->container->get(AuthService::class)->isAdmin()),
+            new TwigFunction('flashes', fn (): array => $this->container->get(Session::class)->takeFlashes()),
             new TwigFunction('sidebar', fn () => $this->container->get(Sidebar::class)->data()),
+            new TwigFunction('item_image', $this->itemImage(...)),
         ];
     }
 
     public function getFilters(): array
     {
         return [
-            new TwigFilter('breed', fn (int $breed, int $sex = 0) => Character::breed($breed, $sex)),
-            new TwigFilter('alignment', fn (int $alignment) => Character::alignment($alignment)),
-            new TwigFilter('xp_progress', fn (int $xp, int $level) => Experience::progress(Experience::PLAYER, Experience::MAX_PLAYER_LEVEL, $level, $xp)),
-            new TwigFilter('item_effects', fn (?string $effects) => ItemEffects::describe((string) $effects)),
-            new TwigFilter('date_fr', $this->formatDate(...)),
-            new TwigFilter('legacy_date', $this->legacyDate(...)),
-            new TwigFilter('duration', $this->duration(...)),
+            new TwigFilter('breed', static fn (Character $character): string => CharacterLabels::breed($character->breed, $character->sex)),
+            new TwigFilter('alignment', static fn (int $alignment): string => CharacterLabels::alignment($alignment)),
+            new TwigFilter('xp_progress', static fn (Character $character): int => Experience::progress(Experience::PLAYER, Experience::MAX_PLAYER_LEVEL, $character->level, $character->xp)),
+            new TwigFilter('item_effects', static fn (ShopItem $item): array => ItemEffects::describe($item->effects)),
+            new TwigFilter('date_fr', self::formatDate(...)),
+            new TwigFilter('duration', self::duration(...)),
         ];
     }
 
     /** URL of a file in public/, with its modification time for cache busting. */
     private function asset(string $path): string
     {
-        $file = dirname(__DIR__, 2) . '/public/' . ltrim($path, '/');
+        $file = self::PUBLIC_DIR . ltrim($path, '/');
         $version = is_file($file) ? '?v=' . filemtime($file) : '';
         return $this->container->get(Config::class)->appUrl . ltrim($path, '/') . $version;
     }
 
+    /** Sprite exported by bin/export-item-images, or null when it does not exist. */
+    private function itemImage(ShopItem $item): ?string
+    {
+        $path = sprintf('assets/img/items/%d/%d.png', $item->type, $item->skin);
+        return $item->skin > 0 && is_file(self::PUBLIC_DIR . $path) ? $this->asset($path) : null;
+    }
+
     /** @param 'long'|'short'|'datetime' $format */
-    private function formatDate(DateTimeInterface|string|null $date, string $format = 'long'): string
+    public static function formatDate(DateTimeInterface|string|null $date, string $format = 'long'): string
     {
         if ($date === null || $date === '') {
             return '';
@@ -79,21 +90,11 @@ final class AppExtension extends AbstractExtension
             'datetime' => "d MMMM yyyy 'à' HH'h'mm",
             default => 'd MMMM yyyy',
         };
-        return (string) (new IntlDateFormatter('fr_FR', IntlDateFormatter::NONE, IntlDateFormatter::NONE, null, null, $pattern))->format($date);
-    }
-
-    /** world_accounts.lastConnectionDate is stored as "YYYY~MM~DD~HH~MM". */
-    private function legacyDate(?string $value): ?DateTimeImmutable
-    {
-        $parts = explode('~', (string) $value);
-        if (count($parts) < 5) {
-            return null;
-        }
-        return DateTimeImmutable::createFromFormat('Y-n-j G:i', sprintf('%d-%d-%d %d:%02d', ...array_map('intval', array_slice($parts, 0, 5)))) ?: null;
+        return (string) new IntlDateFormatter('fr_FR', IntlDateFormatter::NONE, IntlDateFormatter::NONE, null, null, $pattern)->format($date);
     }
 
     /** "2 h 15 min", "45 min", "3 h" (rounded up to the minute). */
-    private function duration(int $seconds): string
+    public static function duration(int $seconds): string
     {
         $totalMinutes = (int) ceil(max(0, $seconds) / 60);
         $hours = intdiv($totalMinutes, 60);

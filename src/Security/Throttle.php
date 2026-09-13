@@ -12,26 +12,26 @@ use StarLoco\Web\Http\Request;
  * Brute-force protection: at most MAX_FAILURES failed attempts per (IP, action) per window.
  * Table: website_auth_attempts (migrations/002).
  */
-final class Throttle
+final readonly class Throttle
 {
-    public const LOGIN = 'login';
-    public const PASSWORD_RESET = 'password_reset';
-    public const SECRET_ANSWER = 'secret_answer';
+    public const string LOGIN = 'login';
+    public const string PASSWORD_RESET = 'password_reset';
+    public const string SECRET_ANSWER = 'secret_answer';
 
-    public const MAX_FAILURES = 5;
-    public const WINDOW_MINUTES = 15;
+    public const int MAX_FAILURES = 5;
+    public const int WINDOW_MINUTES = 15;
 
     public function __construct(
-        private readonly Database $database,
-        private readonly Request $request,
-        private readonly Config $config,
+        private Database $database,
+        private Request $request,
+        private Config $config,
     ) {
     }
 
     public function isBlocked(string $action): bool
     {
         $query = $this->database->login()->prepare(
-            'SELECT COUNT(*) FROM website_auth_attempts WHERE ip = ? AND action = ? AND attempted_at > NOW() - INTERVAL ' . self::WINDOW_MINUTES . ' MINUTE'
+            'SELECT COUNT(*) FROM website_auth_attempts WHERE ip = ? AND action = ? AND attempted_at > NOW() - INTERVAL ' . self::WINDOW_MINUTES . ' MINUTE',
         );
         $query->execute([$this->ip(), $action]);
         return (int) $query->fetchColumn() >= self::MAX_FAILURES;

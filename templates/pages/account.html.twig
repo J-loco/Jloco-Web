@@ -13,11 +13,10 @@
         <section class="card" aria-labelledby="account-info">
             <div class="card-header"><h2 id="account-info" class="card-title">Informations</h2></div>
             <dl class="divide-y divide-stone-100 text-sm dark:divide-stone-800">
-                {% set last_login = account.lastConnectionDate|legacy_date %}
-                {% for label, value in {
+                                {% for label, value in {
                     'Pseudo': account.pseudo ?: 'Défini à la première connexion en jeu',
-                    'Inscription': account.dateRegister ?: '—',
-                    'Dernière connexion': last_login ? last_login|date_fr('datetime') : 'Jamais',
+                    'Inscription': account.registeredOn ?: '—',
+                    'Dernière connexion': account.lastLoginAt ? account.lastLoginAt|date_fr('datetime') : 'Jamais',
                     'Votes': account.totalVotes,
                 } %}
                     <div class="flex justify-between gap-4 px-5 py-2.5">
@@ -36,8 +35,8 @@
             <div class="card-header"><h2 id="account-privacy" class="card-title">Confidentialité</h2></div>
             <ul class="divide-y divide-stone-100 text-sm dark:divide-stone-800">
                 {% for flag, item in {
-                    armory: {enabled: account.showOrHide, label: 'Visible dans l\'armurerie', help: 'Tes personnages apparaissent dans l\'armurerie du site.'},
-                    position: {enabled: account.showOrHidePos, label: 'Position visible', help: 'La zone où se trouvent tes personnages peut être affichée sur le site.'},
+                    armory: {enabled: account.visibleInArmory, label: 'Visible dans l\'armurerie', help: 'Tes personnages apparaissent dans l\'armurerie du site.'},
+                    position: {enabled: account.positionVisible, label: 'Position visible', help: 'La zone où se trouvent tes personnages peut être affichée sur le site.'},
                 } %}
                     <li class="flex items-center justify-between gap-4 px-5 py-3">
                         <div>
@@ -68,11 +67,11 @@
                             <tr>
                                 <td>
                                     <span class="font-medium text-stone-900 dark:text-stone-100">{{ character.name }}</span>
-                                    <span class="block text-xs text-stone-500 dark:text-stone-400">{{ character.class|breed(character.sexe) }}</span>
+                                    <span class="block text-xs text-stone-500 dark:text-stone-400">{{ character|breed }}</span>
                                 </td>
                                 <td class="tabular-nums">{{ character.level }}</td>
-                                <td>{{ ui.progress(character.xp|xp_progress(character.level)) }}</td>
-                                <td><span class="badge badge-neutral">{{ character.alignement|alignment }}</span></td>
+                                <td>{{ ui.progress(character|xp_progress) }}</td>
+                                <td><span class="badge badge-neutral">{{ character.alignment|alignment }}</span></td>
                             </tr>
                         {% endfor %}
                     </tbody>

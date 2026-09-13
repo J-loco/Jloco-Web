@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace StarLoco\Web\Http;
 
-final class Route
+final readonly class Route
 {
     /**
      * @param list<string> $methods
@@ -12,11 +12,11 @@ final class Route
      * @param bool $csrf whether POST requests must carry the CSRF token
      */
     public function __construct(
-        public readonly array $methods,
-        public readonly string $pattern,
-        public readonly string $name,
-        public readonly array $handler,
-        public readonly bool $csrf = true,
+        public array $methods,
+        public string $pattern,
+        public string $name,
+        public array $handler,
+        public bool $csrf = true,
     ) {
     }
 

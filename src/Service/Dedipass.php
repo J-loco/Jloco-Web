@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace StarLoco\Web\Service;
 
 use StarLoco\Web\Config;
+use StarLoco\Web\Model\Account;
 use StarLoco\Web\Repository\AccountRepository;
 use StarLoco\Web\Repository\ShopRepository;
 
@@ -12,12 +13,12 @@ use StarLoco\Web\Repository\ShopRepository;
  * Buying shop points with Dedipass codes. The Dedipass widget posts "code" and "rate" to the
  * account page; the code is validated against the Dedipass API before crediting.
  */
-final class Dedipass
+final readonly class Dedipass
 {
     public function __construct(
-        private readonly Config $config,
-        private readonly AccountRepository $accounts,
-        private readonly ShopRepository $shop,
+        private Config $config,
+        private AccountRepository $accounts,
+        private ShopRepository $shop,
     ) {
     }
 
@@ -27,7 +28,7 @@ final class Dedipass
     }
 
     /** @return array{error: ?string, points: int} */
-    public function redeem(object $account, string $code, string $rate): array
+    public function redeem(Account $account, string $code, string $rate): array
     {
         $code = preg_replace('/[^a-zA-Z0-9]+/', '', $code) ?? '';
         $rate = preg_replace('/[^a-zA-Z0-9\-]+/', '', $rate) ?? '';
@@ -43,11 +44,11 @@ final class Dedipass
             return ['error' => 'Le code ' . $code . ' est invalide ou déjà utilisé.', 'points' => 0];
         }
 
-        $points = (int) $result->virtual_currency;
-        $this->accounts->addPoints((int) $account->guid, $points);
+        $points = (int) ($result->virtual_currency ?? 0);
+        $this->accounts->addPoints($account->id, $points);
 
-        $rateParts = array_pad(explode('-', (string) $result->rate), 4, '');
-        $this->shop->logPointsPurchase($account->account, $points, (string) $result->code, $rateParts[0] . '-' . $rateParts[1], $rateParts[2] . '-' . $rateParts[3]);
+        $rateParts = array_pad(explode('-', (string) ($result->rate ?? '')), 4, '');
+        $this->shop->logPointsPurchase($account->name, $points, (string) ($result->code ?? $code), $rateParts[0] . '-' . $rateParts[1], $rateParts[2] . '-' . $rateParts[3]);
 
         return ['error' => null, 'points' => $points];
     }

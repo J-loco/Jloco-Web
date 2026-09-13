@@ -4,42 +4,54 @@ declare(strict_types=1);
 
 namespace StarLoco\Web;
 
+use StarLoco\Web\Security\PasswordHasher;
+
 /**
  * Typed application settings, read once from the environment.
  *
  * Precedence: real environment variables (docker compose) > StarLoco-Web/.env (phpdotenv) > defaults.
  * Every variable is documented in .env.example.
  */
-final class Config
+final readonly class Config
 {
+    /**
+     * @param array<int, string> $shopServers shop server key (website_shop_objects.server) => game database name
+     * @param PasswordHasher::SCHEME_* $passwordHashScheme
+     */
     public function __construct(
-        public readonly string $appUrl,
-        public readonly bool $debug,
-        public readonly bool $trustCloudflare,
-        public readonly string $siteName,
-        public readonly int $adminAccountId,
-        public readonly string $dbHost,
-        public readonly int $dbPort,
-        public readonly string $dbUser,
-        public readonly string $dbPass,
-        public readonly string $loginDbName,
-        public readonly string $gameDbName,
-        public readonly string $loginServerHost,
-        public readonly int $loginServerPort,
-        public readonly string $gameServerHost,
-        public readonly int $gameServerPort,
-        public readonly int $gameServerId,
-        public readonly string $forumUrl,
-        public readonly string $forumRssUrl,
-        public readonly string $downloadUrl,
-        public readonly string $voteUrl,
-        public readonly int $votePoints,
-        public readonly string $dedipassPublicKey,
+        public string $appUrl,
+        public bool $debug,
+        public bool $trustCloudflare,
+        public string $siteName,
+        public int $adminAccountId,
+        public string $dbHost,
+        public int $dbPort,
+        public string $dbUser,
+        public string $dbPass,
+        public string $loginDbName,
+        public string $gameDbName,
+        public string $loginServerHost,
+        public int $loginServerPort,
+        public string $gameServerHost,
+        public int $gameServerPort,
+        public int $gameServerId,
+        public string $forumUrl,
+        public string $forumRssUrl,
+        public string $downloadUrl,
+        public string $voteUrl,
+        public int $votePoints,
+        public string $dedipassPublicKey,
+        public array $shopServers,
+        public string $passwordHashScheme,
+        public string $mailerDsn,
+        public string $mailFrom,
     ) {
     }
 
     public static function fromEnvironment(): self
     {
+        $gameDbName = self::string('GAME_DB_NAME', 'starloco_game');
+
         return new self(
             appUrl: rtrim(self::string('APP_URL', 'http://127.0.0.1/dofus/'), '/') . '/',
             debug: self::bool('APP_DEBUG'),
@@ -52,7 +64,7 @@ final class Config
             dbUser: self::string('DB_USER', 'root'),
             dbPass: self::string('DB_PASS', ''),
             loginDbName: self::string('LOGIN_DB_NAME', 'starloco_login'),
-            gameDbName: self::string('GAME_DB_NAME', 'starloco_game'),
+            gameDbName: $gameDbName,
             loginServerHost: self::string('LOGIN_HOST', '127.0.0.1'),
             loginServerPort: self::int('LOGIN_PORT', 450),
             gameServerHost: self::string('GAME_HOST', '127.0.0.1'),
@@ -64,6 +76,12 @@ final class Config
             voteUrl: self::string('VOTE_URL', 'https://www.rpg-paradize.com/'),
             votePoints: self::int('VOTE_POINTS', 5),
             dedipassPublicKey: self::string('DEDIPASS_PUBLIC_KEY', ''),
+            shopServers: self::parseShopServers(self::string('SHOP_SERVERS', '1:' . $gameDbName)),
+            passwordHashScheme: self::string('PASSWORD_HASH_SCHEME', PasswordHasher::SCHEME_LEGACY) === PasswordHasher::SCHEME_PBKDF2
+                ? PasswordHasher::SCHEME_PBKDF2
+                : PasswordHasher::SCHEME_LEGACY,
+            mailerDsn: self::string('MAILER_DSN', ''),
+            mailFrom: self::string('MAIL_FROM', ''),
         );
     }
 
@@ -76,6 +94,29 @@ final class Config
     public function isHttps(): bool
     {
         return str_starts_with($this->appUrl, 'https://');
+    }
+
+    /** Password reset by email is offered only when outgoing mail is configured. */
+    public function mailEnabled(): bool
+    {
+        return $this->mailerDsn !== '' && $this->mailFrom !== '';
+    }
+
+    /**
+     * "1:starloco_game,2:starloco_game_2" => [1 => 'starloco_game', 2 => 'starloco_game_2'].
+     *
+     * @return array<int, string>
+     */
+    public static function parseShopServers(string $value): array
+    {
+        $servers = [];
+        foreach (array_filter(array_map(trim(...), explode(',', $value))) as $entry) {
+            [$key, $database] = array_pad(explode(':', $entry, 2), 2, '');
+            if (ctype_digit($key) && preg_match('/^[A-Za-z0-9_]+$/', $database)) {
+                $servers[(int) $key] = $database;
+            }
+        }
+        return $servers;
     }
 
     private static function raw(string $key): ?string

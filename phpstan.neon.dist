@@ -1,0 +1,15 @@
+parameters:
+    level: 6
+    paths:
+        - src
+        - config
+        - public/index.php
+        - public/launcher/status.php
+        - public/launcher/news.php
+        - bin/migrate
+        - bin/sync-experience
+        - bin/item-sprites
+        - tests
+    bootstrapFiles:
+        - tests/bootstrap.php
+    tmpDir: /tmp/phpstan

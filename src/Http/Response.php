@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace StarLoco\Web\Http;
 
-final class Response
+final readonly class Response
 {
     /** @param array<string, string> $headers */
     public function __construct(
-        public readonly string $body = '',
-        public readonly int $status = 200,
-        public readonly array $headers = [],
+        public string $body = '',
+        public int $status = 200,
+        public array $headers = [],
     ) {
     }
 

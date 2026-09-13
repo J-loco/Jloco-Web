@@ -56,11 +56,11 @@
                                     <td class="text-stone-500 tabular-nums">{{ loop.index }}</td>
                                     <td>
                                         <span class="font-medium text-stone-900 dark:text-stone-100">{{ player.name }}</span>
-                                        <span class="block text-xs text-stone-500 dark:text-stone-400">{{ player.class|breed(player.sexe) }}</span>
+                                        <span class="block text-xs text-stone-500 dark:text-stone-400">{{ player|breed }}</span>
                                     </td>
                                     <td class="tabular-nums">{{ player.level }}</td>
-                                    {% if tab == 'pvm' %}<td>{{ ui.progress(player.xp|xp_progress(player.level)) }}</td>{% endif %}
-                                    <td><span class="badge badge-neutral">{{ player.alignement|alignment }}</span></td>
+                                    {% if tab == 'pvm' %}<td>{{ ui.progress(player|xp_progress) }}</td>{% endif %}
+                                    <td><span class="badge badge-neutral">{{ player.alignment|alignment }}</span></td>
                                     {% if tab == 'pvp' %}<td class="text-right tabular-nums">{{ player.honor|number_format(0, ',', ' ') }}</td>{% endif %}
                                 </tr>
                             {% endfor %}
@@ -79,7 +79,7 @@
                                 <tr>
                                     <td class="text-stone-500 tabular-nums">{{ loop.index }}</td>
                                     <td class="font-medium text-stone-900 dark:text-stone-100">{{ guild.name }}</td>
-                                    <td class="tabular-nums">{{ guild.lvl }}</td>
+                                    <td class="tabular-nums">{{ guild.level }}</td>
                                     <td class="text-right tabular-nums">{{ guild.xp|number_format(0, ',', ' ') }}</td>
                                 </tr>
                             {% endfor %}

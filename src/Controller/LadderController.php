@@ -4,40 +4,48 @@ declare(strict_types=1);
 
 namespace StarLoco\Web\Controller;
 
-use StarLoco\Web\Game\Experience;
 use StarLoco\Web\Http\Request;
 use StarLoco\Web\Http\Response;
 use StarLoco\Web\Repository\AccountRepository;
 use StarLoco\Web\Repository\GameRepository;
 use StarLoco\Web\Repository\GuildRepository;
 use StarLoco\Web\Repository\PlayerRepository;
+use StarLoco\Web\Service\JobLadder;
 
 /** Rankings: one URL per tab, no JavaScript needed. */
 final class LadderController extends AbstractController
 {
-    private const LIMIT = 50;
+    private const int LIMIT = 50;
 
+    /** @param array<string, string> $params */
     public function pvm(Request $request, array $params): Response
     {
         return $this->tab('pvm', ['players' => $this->get(PlayerRepository::class)->topByXp(self::LIMIT)]);
     }
 
+    /** @param array<string, string> $params */
     public function pvp(Request $request, array $params): Response
     {
         return $this->tab('pvp', ['players' => $this->get(PlayerRepository::class)->topByHonor(self::LIMIT)]);
     }
 
+    /** @param array<string, string> $params */
     public function guilds(Request $request, array $params): Response
     {
         return $this->tab('guilds', ['guilds' => $this->get(GuildRepository::class)->top(self::LIMIT)]);
     }
 
+    /** @param array<string, string> $params */
     public function votes(Request $request, array $params): Response
     {
         return $this->tab('votes', ['voters' => $this->get(AccountRepository::class)->topVoters(self::LIMIT)]);
     }
 
-    /** Job picker; the GET form submits ?job=, redirected to the canonical /ladder/jobs/{job}. */
+    /**
+     * Job picker; the GET form submits ?job=, redirected to the canonical /ladder/jobs/{job}.
+     *
+     * @param array<string, string> $params
+     */
     public function jobs(Request $request, array $params): Response
     {
         if (ctype_digit($request->query('job'))) {
@@ -46,6 +54,7 @@ final class LadderController extends AbstractController
         return $this->tab('jobs', ['jobs' => $this->get(GameRepository::class)->jobs(), 'job' => null, 'players' => []]);
     }
 
+    /** @param array<string, string> $params */
     public function job(Request $request, array $params): Response
     {
         $jobs = $this->get(GameRepository::class)->jobs();
@@ -53,31 +62,7 @@ final class LadderController extends AbstractController
         if (!isset($jobs[$jobId])) {
             return $this->notFound();
         }
-
-        $players = [];
-        foreach ($this->get(PlayerRepository::class)->withJob($jobId) as $player) {
-            $xp = 0;
-            $otherJobs = [];
-            foreach (explode(';', (string) $player->jobs) as $entry) {
-                [$id, $jobXp] = array_pad(explode(',', $entry), 2, '0');
-                if ((int) $id === $jobId) {
-                    $xp = (int) $jobXp;
-                } elseif (isset($jobs[(int) $id])) {
-                    $otherJobs[] = $jobs[(int) $id];
-                }
-            }
-            $level = Experience::levelFromXp(Experience::JOB, Experience::MAX_JOB_LEVEL, $xp);
-            $players[] = (object) [
-                'name' => $player->name,
-                'level' => $level,
-                'xp' => $xp,
-                'progress' => Experience::progress(Experience::JOB, Experience::MAX_JOB_LEVEL, $level, $xp),
-                'otherJobs' => $otherJobs,
-            ];
-        }
-        usort($players, fn (object $a, object $b) => [$b->level, $b->xp] <=> [$a->level, $a->xp]);
-
-        return $this->tab('jobs', ['jobs' => $jobs, 'job' => $jobId, 'players' => array_slice($players, 0, self::LIMIT)]);
+        return $this->tab('jobs', ['jobs' => $jobs, 'job' => $jobId, 'players' => $this->get(JobLadder::class)->ranking($jobId, $jobs, self::LIMIT)]);
     }
 
     /** @param array<string, mixed> $context */

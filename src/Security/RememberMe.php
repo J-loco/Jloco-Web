@@ -11,15 +11,15 @@ use StarLoco\Web\Http\Request;
  * "Remember me" cookie "selector:validator". Only a SHA-256 of the validator is stored
  * (website_remember_tokens); tokens are single use and rotated on every restore.
  */
-final class RememberMe
+final readonly class RememberMe
 {
-    private const COOKIE = 'starloco_remember';
-    private const DAYS = 7;
+    private const string COOKIE = 'starloco_remember';
+    private const int DAYS = 7;
 
     public function __construct(
-        private readonly Database $database,
-        private readonly Session $session,
-        private readonly Request $request,
+        private Database $database,
+        private Session $session,
+        private Request $request,
     ) {
     }
 

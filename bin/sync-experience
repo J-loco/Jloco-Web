@@ -1,0 +1,60 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * Keeps src/Game/Experience.php in sync with StarLoco-Game/scripts/data/Experience.lua.
+ *
+ *   php bin/sync-experience [--check] [path/to/Experience.lua]
+ *
+ * The Lua file is the source of truth (the game server loads it). Without --check the PHP tables
+ * are rewritten; with --check the script only reports a difference and exits with 1.
+ * The path defaults to EXPERIENCE_LUA, then ../StarLoco-Game/scripts/data/Experience.lua.
+ */
+
+declare(strict_types=1);
+
+$check = in_array('--check', $argv, true);
+$arguments = array_values(array_filter(array_slice($argv, 1), static fn (string $arg): bool => $arg !== '--check'));
+$luaPath = $arguments[0] ?? (getenv('EXPERIENCE_LUA') ?: dirname(__DIR__, 2) . '/StarLoco-Game/scripts/data/Experience.lua');
+$phpPath = dirname(__DIR__) . '/src/Game/Experience.php';
+
+if (!is_file($luaPath)) {
+    fwrite(STDERR, "Experience.lua not found: $luaPath\n");
+    exit(2);
+}
+
+$lua = (string) file_get_contents($luaPath);
+$php = (string) file_get_contents($phpPath);
+
+/** @return list<int> */
+$luaTable = static function (string $name) use ($lua, $luaPath): array {
+    if (!preg_match('/^\s*' . $name . '\s*=\s*\{([^}]*)\}/m', $lua, $match)) {
+        fwrite(STDERR, "Table $name not found in $luaPath\n");
+        exit(2);
+    }
+    return array_map(intval(...), array_values(array_filter(array_map(trim(...), explode(',', $match[1])), static fn (string $v): bool => $v !== '')));
+};
+
+$tables = ['PLAYER' => $luaTable('PlayerLevelExp'), 'JOB' => $luaTable('JobLevelExp')];
+
+$updated = $php;
+foreach ($tables as $constant => $values) {
+    $rows = array_map(static fn (array $row): string => '        ' . implode(', ', $row) . ',', array_chunk($values, 10));
+    $replacement = "public const array $constant = [\n" . implode("\n", $rows) . "\n    ];";
+    $updated = (string) preg_replace('/public const array ' . $constant . ' = \[.*?\];/s', $replacement, $updated, 1, $count);
+    if ($count !== 1) {
+        fwrite(STDERR, "Constant $constant not found in $phpPath\n");
+        exit(2);
+    }
+}
+
+if ($updated === $php) {
+    fwrite(STDOUT, "Experience tables are in sync with $luaPath\n");
+    exit(0);
+}
+if ($check) {
+    fwrite(STDERR, "src/Game/Experience.php differs from $luaPath: run composer experience:sync\n");
+    exit(1);
+}
+file_put_contents($phpPath, $updated);
+fwrite(STDOUT, "src/Game/Experience.php updated from $luaPath\n");

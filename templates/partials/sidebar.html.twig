@@ -8,9 +8,9 @@
             <img class="size-10 shrink-0 rounded-lg" src="{{ asset('assets/img/servers/login.jpg') }}" alt="" width="40" height="40">
             <div class="flex-1">
                 <p class="font-medium text-stone-900 dark:text-stone-100">Connexion</p>
-                <p class="text-xs text-stone-500 dark:text-stone-400">{{ data.login.online ? 'En ligne' : 'Hors ligne' }}</p>
+                <p class="text-xs text-stone-500 dark:text-stone-400">{{ data.loginOnline ? 'En ligne' : 'Hors ligne' }}</p>
             </div>
-            {{ ui.status_dot(data.login.online) }}
+            {{ ui.status_dot(data.loginOnline) }}
         </li>
         <li class="flex items-center gap-3 px-5 py-3">
             <img class="size-10 shrink-0 rounded-lg" src="{{ asset('assets/img/servers/jiva.jpg') }}" alt="" width="40" height="40">
@@ -53,13 +53,13 @@
             <a class="link text-xs" href="{{ url('ladder') }}">Classement</a>
         </div>
         <ol class="space-y-3 px-5 py-4 text-sm">
-            {% for player in data.podium %}
+            {% for entry in data.podium %}{% set player = entry.character %}
                 <li class="flex gap-3">
                     <span class="grid size-7 shrink-0 place-items-center rounded-full text-xs font-bold {{ ['bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300', 'bg-stone-200 text-stone-700 dark:bg-stone-700 dark:text-stone-200', 'bg-orange-100 text-orange-800 dark:bg-orange-500/20 dark:text-orange-300'][loop.index0] }}">{{ loop.index }}</span>
                     <div class="min-w-0">
                         <p class="truncate font-medium text-stone-900 dark:text-stone-100">{{ player.name }}</p>
                         <p class="text-xs text-stone-500 dark:text-stone-400">
-                            {{ player.class|breed(player.sexe) }} niveau {{ player.level }}{% if player.place %} · {{ player.place.name }}{% endif %}
+                            {{ player|breed }} niveau {{ player.level }}{% if entry.place %} · {{ entry.place.name }}{% endif %}
                         </p>
                     </div>
                 </li>
@@ -75,12 +75,12 @@
             <span class="badge badge-danger tabular-nums">{{ data.wanted|length }}</span>
         </div>
         <ul class="space-y-3 px-5 py-4 text-sm">
-            {% for player in data.wanted %}
+            {% for entry in data.wanted %}{% set player = entry.character %}
                 <li>
-                    <p class="font-medium text-stone-900 dark:text-stone-100">{{ player.name }} <span class="font-normal text-stone-500 dark:text-stone-400">· {{ player.class|breed(player.sexe) }} niveau {{ player.level }}</span></p>
+                    <p class="font-medium text-stone-900 dark:text-stone-100">{{ player.name }} <span class="font-normal text-stone-500 dark:text-stone-400">· {{ player|breed }} niveau {{ player.level }}</span></p>
                     <p class="text-xs text-stone-500 dark:text-stone-400">
-                        {% if player.place %}
-                            Vu récemment : {{ player.place.name }} [{{ player.place.x }}, {{ player.place.y }}]
+                        {% if entry.place %}
+                            Vu récemment : {{ entry.place.name }} [{{ entry.place.x }}, {{ entry.place.y }}]
                         {% else %}
                             Position inconnue
                         {% endif %}

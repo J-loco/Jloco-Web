@@ -68,7 +68,9 @@ final class Container
         foreach ($constructor->getParameters() as $parameter) {
             $type = $parameter->getType();
             if ($type instanceof ReflectionNamedType && !$type->isBuiltin()) {
-                $arguments[] = $this->get($type->getName());
+                /** @var class-string $dependency */
+                $dependency = $type->getName();
+                $arguments[] = $this->get($dependency);
             } elseif ($parameter->isDefaultValueAvailable()) {
                 $arguments[] = $parameter->getDefaultValue();
             } else {

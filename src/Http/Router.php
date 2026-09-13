@@ -6,6 +6,7 @@ namespace StarLoco\Web\Http;
 
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
+use FastRoute\RouteParser;
 use InvalidArgumentException;
 use StarLoco\Web\Config;
 
@@ -52,22 +53,29 @@ final class Router
      * Absolute URL of a named route. Pattern placeholders are filled from $params; the remaining
      * params become the query string.
      *
-     * @param array<string, scalar> $params
+     * @param array<string, scalar|null> $params null and '' query values are left out
      */
     public function url(string $name, array $params = []): string
     {
         $route = $this->routes[$name] ?? throw new InvalidArgumentException("Unknown route \"$name\"");
 
-        $path = preg_replace_callback('/\{(\w+)(?::[^}]+)?\}/', function (array $match) use (&$params, $name): string {
-            if (!array_key_exists($match[1], $params)) {
-                throw new InvalidArgumentException("Route \"$name\" needs parameter \"{$match[1]}\"");
+        // FastRoute's own parser: placeholder regexes may contain braces ("{token:[a-f0-9]{64}}").
+        $variants = new RouteParser\Std()->parse($route->pattern);
+        $path = '';
+        foreach (end($variants) as $part) {
+            if (is_string($part)) {
+                $path .= $part;
+                continue;
             }
-            $value = rawurlencode((string) $params[$match[1]]);
-            unset($params[$match[1]]);
-            return $value;
-        }, $route->pattern);
+            [$placeholder] = $part;
+            if (!array_key_exists($placeholder, $params)) {
+                throw new InvalidArgumentException("Route \"$name\" needs parameter \"$placeholder\"");
+            }
+            $path .= rawurlencode((string) $params[$placeholder]);
+            unset($params[$placeholder]);
+        }
 
-        $query = http_build_query(array_filter($params, fn ($value) => $value !== null && $value !== ''));
+        $query = http_build_query(array_filter($params, static fn (int|float|string|bool|null $value): bool => $value !== null && $value !== ''));
         return rtrim($this->config->appUrl, '/') . $path . ($query !== '' ? '?' . $query : '');
     }
 }

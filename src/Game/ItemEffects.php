@@ -11,7 +11,7 @@ namespace StarLoco\Web\Game;
 final class ItemEffects
 {
     /** Effect id (hex) => [sign, label]. Unknown ids are skipped. */
-    private const EFFECTS = [
+    private const array EFFECTS = [
         '99' => ['-', 'Vitalité'],
         '9d' => ['-', 'Terre'],
         '9b' => ['-', 'Feu'],

@@ -51,6 +51,10 @@ The code predates the current `starloco_login` / `starloco_game` schemas.
 | D16 | `display_errors` on in the image: the `utf8_encode` deprecation notice was printed inside the launcher JSON | `launcher/news.php` |
 | D17 | Buying inactive items or items from another server was possible (no `active`/`server` check) | `buy.php` |
 | D18 | Sidebar read sub-area names from `starloco_game.subarea_data.name` (no such column; names are in `starloco_login.world_base_sub_areas`); wanted-list `prepare()` received two arguments because of an unescaped quote | `include/rightmenu.php` (fixed in Phase 1) |
+| D19 | Registration allowed `_` in account names, which the login server rejects (account unusable in game) | `AuthService` (fixed in Phase 3) |
+| D20 | Login server `AccountData.update()` wrote the in-memory password back, reverting site password changes; SQL built by concatenation | StarLoco-Login (fixed in Phase 3) |
+| D21 | Login server stored a missing nickname as the string `'null'` | StarLoco-Login `Account` (fixed in Phase 3) |
+| D22 | Non-latin1 input compared with latin1 columns → "Illegal mix of collations" 500 | repositories (fixed in Phase 3, `Support\Text`) |
 
 ## Maintainability
 

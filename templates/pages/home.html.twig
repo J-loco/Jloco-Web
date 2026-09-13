@@ -8,14 +8,14 @@
 
     {% for item in news %}
         <article class="card overflow-hidden">
-            {% if item.img %}
-                <img class="aspect-[3/1] w-full object-cover" src="{{ item.img }}" alt="" loading="lazy">
+            {% if item.image %}
+                <img class="aspect-[3/1] w-full object-cover" src="{{ item.image }}" alt="" loading="lazy">
             {% endif %}
             <div class="card-body space-y-3">
                 <header class="space-y-1">
                     <h2 class="text-lg font-semibold">{{ item.title }}</h2>
                     <p class="text-xs text-stone-500 dark:text-stone-400">
-                        <time datetime="{{ item.date|date('c') }}">{{ item.date|date_fr }}</time>{% if item.author %} · par {{ item.author }}{% endif %}
+                        <time datetime="{{ item.publishedAt|date('c') }}">{{ item.publishedAt|date_fr }}</time>{% if item.author %} · par {{ item.author }}{% endif %}
                     </p>
                 </header>
                 {# Written by an administrator: HTML is allowed on purpose. #}

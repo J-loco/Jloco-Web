@@ -25,7 +25,7 @@
                 {% set active = category and row.id == category.id %}
                 <a href="{{ url('shop_category', {server: server, category: row.id}) }}" {% if active %}aria-current="page"{% endif %}
                    class="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors {{ active ? 'border-brand-600 bg-brand-600 text-white dark:border-brand-500 dark:bg-brand-500 dark:text-stone-950' : 'border-stone-300 bg-white hover:border-brand-400 dark:border-stone-700 dark:bg-stone-900' }}">
-                    {{ row.name }} <span class="text-xs opacity-70 tabular-nums">{{ row.items }}</span>
+                    {{ row.name }} <span class="text-xs opacity-70 tabular-nums">{{ row.itemCount }}</span>
                 </a>
             {% else %}
                 {{ ui.empty('Aucun objet en vente sur ce serveur.') }}
@@ -37,11 +37,14 @@
         {% else %}
             <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {% for item in items %}
-                    {% set effects = item.effects|item_effects %}
+                    {% set effects = item|item_effects %}{% set image = item_image(item) %}
                     <article class="card flex flex-col">
                         <div class="card-body flex-1 space-y-3">
                             <div class="flex items-start justify-between gap-3">
-                                <h2 class="font-semibold">{{ item.name }}</h2>
+                                <div class="flex items-center gap-3">
+                                    {% if image %}<img class="size-12 shrink-0 rounded-md bg-white object-contain p-0.5 ring-1 ring-stone-200 dark:ring-stone-700" src="{{ image }}" alt="" width="48" height="48" loading="lazy">{% endif %}
+                                    <h2 class="font-semibold">{{ item.name }}</h2>
+                                </div>
                                 <span class="badge badge-neutral shrink-0">Niv. {{ item.level }}</span>
                             </div>
                             {% if effects %}
@@ -50,7 +53,7 @@
                                     {% if effects|length > 5 %}<li class="text-stone-400">+ {{ effects|length - 5 }} autre{{ effects|length - 5 > 1 ? 's' }}</li>{% endif %}
                                 </ul>
                             {% endif %}
-                            {% if item.jp %}<span class="badge badge-success">Jet parfait</span>{% endif %}
+                            {% if item.maxStats %}<span class="badge badge-success">Jet parfait</span>{% endif %}
                         </div>
                         <div class="flex items-center justify-between gap-3 border-t border-stone-100 px-5 py-3 dark:border-stone-800">
                             <span class="font-semibold tabular-nums">{{ item.price }} pts</span>

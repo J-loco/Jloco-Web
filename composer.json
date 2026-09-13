@@ -4,12 +4,13 @@
     "type": "project",
     "license": "proprietary",
     "require": {
-        "php": "^8.3",
+        "php": "^8.4",
         "ext-gd": "*",
         "ext-intl": "*",
         "ext-pdo": "*",
         "ext-pdo_mysql": "*",
         "nikic/fast-route": "^1.3",
+        "symfony/mailer": "^8.1",
         "twig/twig": "^3.28",
         "vlucas/phpdotenv": "^5.6"
     },
@@ -22,7 +23,43 @@
         "optimize-autoloader": true,
         "sort-packages": true,
         "platform": {
-            "php": "8.3.0"
-        }
+            "php": "8.4.1"
+        },
+        "process-timeout": 0
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.95",
+        "phpstan/phpstan": "^2.2",
+        "phpunit/phpunit": "^13.3",
+        "rector/rector": "^2.6"
+    },
+    "scripts": {
+        "lint": "find src config tests bin public/index.php public/launcher/status.php public/launcher/news.php -name \"*.php\" -o -name migrate | xargs -n1 php -l | grep -v \"^No syntax errors\" || true",
+        "cs": "php-cs-fixer check --diff",
+        "cs:fix": "php-cs-fixer fix",
+        "stan": "phpstan analyse --no-progress --memory-limit=1G",
+        "rector": "rector process --dry-run --no-progress-bar",
+        "rector:fix": "rector process --no-progress-bar",
+        "test": "phpunit",
+        "test:unit": "phpunit --testsuite unit",
+        "test:integration": "phpunit --testsuite integration",
+        "experience:check": "php bin/sync-experience --check",
+        "experience:sync": "php bin/sync-experience",
+        "check": [
+            "@cs",
+            "@stan",
+            "@rector",
+            "@test"
+        ],
+        "item-sprites": "php bin/item-sprites"
+    },
+    "scripts-descriptions": {
+        "cs": "Check code style (PSR-12)",
+        "stan": "Static analysis (PHPStan level 6)",
+        "rector": "Show pending automated upgrades",
+        "test": "Unit + integration tests (integration needs TEST_DB_*)",
+        "check": "Everything CI runs",
+        "experience:check": "Fail if src/Game/Experience.php differs from StarLoco-Game Experience.lua (EXPERIENCE_LUA)",
+        "item-sprites": "List the shop item sprites to export (var/item-sprites.tsv)"
     }
 }

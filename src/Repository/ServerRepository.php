@@ -5,20 +5,21 @@ declare(strict_types=1);
 namespace StarLoco\Web\Repository;
 
 use StarLoco\Web\Database;
+use StarLoco\Web\Model\WorldServer;
 
-/** starloco_login.world_servers and website_users_votes. */
-final class ServerRepository
+/** starloco_login.world_servers, website_users_votes and a few totals. */
+final readonly class ServerRepository
 {
-    public function __construct(private readonly Database $database)
+    public function __construct(private Database $database)
     {
     }
 
-    /** @return object{id: int, name: string, uptime: int, population: int}|null */
-    public function find(int $id): ?object
+    public function find(int $id): ?WorldServer
     {
         $query = $this->database->login()->prepare('SELECT id, name, uptime, population FROM world_servers WHERE id = ?');
         $query->execute([$id]);
-        return $query->fetch() ?: null;
+        $row = $query->fetch();
+        return $row ? WorldServer::fromRow($row) : null;
     }
 
     public function countOnlineAccounts(): int

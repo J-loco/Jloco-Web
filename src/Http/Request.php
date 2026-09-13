@@ -9,7 +9,7 @@ use StarLoco\Web\Support\Text;
 /**
  * Immutable view of the current HTTP request.
  */
-final class Request
+final readonly class Request
 {
     /**
      * @param array<string, mixed> $query
@@ -18,12 +18,12 @@ final class Request
      * @param array<string, mixed> $server
      */
     public function __construct(
-        public readonly string $method,
-        public readonly string $path,
-        public readonly array $query,
-        public readonly array $post,
-        public readonly array $cookies,
-        public readonly array $server,
+        public string $method,
+        public string $path,
+        public array $query,
+        public array $post,
+        public array $cookies,
+        public array $server,
     ) {
     }
 

@@ -10,7 +10,7 @@ namespace StarLoco\Web\Game;
 final class Character
 {
     /** Breed id => [male, female] */
-    private const BREEDS = [
+    private const array BREEDS = [
         1 => ['Féca', 'Fécatte'],
         2 => ['Osamodas', 'Osamodas'],
         3 => ['Enutrof', 'Enutrof'],
@@ -25,7 +25,7 @@ final class Character
         12 => ['Pandawa', 'Pandawa'],
     ];
 
-    private const ALIGNMENTS = [0 => 'Neutre', 1 => 'Bonta', 2 => 'Brâkmar', 3 => 'Mercenaire'];
+    private const array ALIGNMENTS = [0 => 'Neutre', 1 => 'Bonta', 2 => 'Brâkmar', 3 => 'Mercenaire'];
 
     public static function breed(int $breed, int $sex): string
     {

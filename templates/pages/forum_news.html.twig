@@ -14,7 +14,7 @@
                 <h2 class="font-semibold">
                     {% if item.link %}<a class="hover:text-brand-700 dark:hover:text-brand-300" href="{{ item.link }}" rel="noopener">{{ item.title }}</a>{% else %}{{ item.title }}{% endif %}
                 </h2>
-                {% if item.date %}<p class="text-xs text-stone-500 dark:text-stone-400">{{ item.date|date_fr }}</p>{% endif %}
+                {% if item.publishedAt %}<p class="text-xs text-stone-500 dark:text-stone-400">{{ item.publishedAt|date_fr }}</p>{% endif %}
                 {% if item.summary %}<p class="text-sm">{{ item.summary }}</p>{% endif %}
             </article>
         {% else %}

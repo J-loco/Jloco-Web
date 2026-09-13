@@ -5,20 +5,21 @@
 
 {% block content %}
     {% set balance = current_account().points %}
-    {% set effects = item.effects|item_effects %}
+    {% set effects = item|item_effects %}{% set image = item_image(item) %}
 
     <nav class="text-sm" aria-label="Fil d'Ariane">
-        <a class="link" href="{{ url('shop_category', {server: server, category: item.category}) }}">← {{ item.category_name ?: 'Boutique' }}</a>
+        <a class="link" href="{{ url('shop_category', {server: server, category: item.categoryId}) }}">← {{ item.categoryName ?: 'Boutique' }}</a>
     </nav>
 
     <article class="card">
         <div class="card-body space-y-5">
             <header class="flex flex-wrap items-start justify-between gap-3">
-                <div class="space-y-1">
+                {% if image %}<img class="size-20 shrink-0 rounded-lg bg-white object-contain p-1 ring-1 ring-stone-200 dark:ring-stone-700" src="{{ image }}" alt="" width="80" height="80">{% endif %}
+                <div class="flex-1 space-y-1">
                     <h1 class="text-2xl font-bold tracking-tight">{{ item.name }}</h1>
-                    <p class="text-sm text-stone-500 dark:text-stone-400">{{ item.category_name }} · niveau {{ item.level }}{% if serverName %} · {{ serverName }}{% endif %}</p>
+                    <p class="text-sm text-stone-500 dark:text-stone-400">{{ item.categoryName }} · niveau {{ item.level }}{% if serverName %} · {{ serverName }}{% endif %}</p>
                 </div>
-                {% if item.jp %}<span class="badge badge-success">Jet parfait</span>{% endif %}
+                {% if item.maxStats %}<span class="badge badge-success">Jet parfait</span>{% endif %}
             </header>
 
             {% if item.description %}<p class="text-sm">{{ item.description }}</p>{% endif %}

@@ -10,8 +10,9 @@ use StarLoco\Web\Repository\NewsRepository;
 
 final class HomeController extends AbstractController
 {
-    private const PER_PAGE = 10;
+    private const int PER_PAGE = 10;
 
+    /** @param array<string, string> $params */
     public function index(Request $request, array $params): Response
     {
         $news = $this->get(NewsRepository::class);

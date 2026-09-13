@@ -9,6 +9,7 @@ declare(strict_types=1);
  * Same table as the site's news (administration page), so news is written once for both.
  */
 
+use StarLoco\Web\Model\NewsPost;
 use StarLoco\Web\Repository\NewsRepository;
 
 $container = require dirname(__DIR__, 2) . '/config/container.php';
@@ -19,13 +20,13 @@ header('Cache-Control: no-store');
 header('Access-Control-Allow-Origin: *');
 
 try {
-    $items = array_map(static fn (object $row) => [
-        'id' => (int) $row->id,
-        'title' => $row->title,
-        'content' => strip_tags($row->content),
-        'date' => $row->date,
-        'author' => $row->author,
-        'img' => $row->img,
+    $items = array_map(static fn (NewsPost $post): array => [
+        'id' => $post->id,
+        'title' => $post->title,
+        'content' => strip_tags($post->content),
+        'date' => $post->publishedAt->format('Y-m-d H:i:s'),
+        'author' => $post->author,
+        'img' => $post->image,
     ], $container->get(NewsRepository::class)->latest($limit));
     echo json_encode($items, JSON_UNESCAPED_UNICODE);
 } catch (Throwable $e) {

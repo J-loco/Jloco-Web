@@ -4,12 +4,12 @@
 {% block title %}Drops{% if term %} : {{ term }}{% endif %}{% endblock %}
 
 {% macro rate(drop) %}
-    {%- if drop.max < 1 -%}
+    {%- if drop.maxRate < 1 -%}
         moins de 1 %
-    {%- elseif drop.min == drop.max -%}
-        {{ drop.max|number_format(drop.max == drop.max|round ? 0 : 1, ',') }} %
+    {%- elseif drop.minRate == drop.maxRate -%}
+        {{ drop.maxRate|number_format(drop.maxRate == drop.maxRate|round ? 0 : 1, ',') }} %
     {%- else -%}
-        {{ drop.min|number_format(drop.min == drop.min|round ? 0 : 1, ',') }} à {{ drop.max|number_format(drop.max == drop.max|round ? 0 : 1, ',') }} %
+        {{ drop.minRate|number_format(drop.minRate == drop.minRate|round ? 0 : 1, ',') }} à {{ drop.maxRate|number_format(drop.maxRate == drop.maxRate|round ? 0 : 1, ',') }} %
     {%- endif -%}
 {% endmacro %}
 
@@ -41,7 +41,7 @@
                     <table class="table">
                         <thead><tr><th>{{ by == 'monster' ? 'Objet' : 'Monstre' }}</th><th class="text-right">Prospection</th><th class="text-right">Taux</th></tr></thead>
                         <tbody>
-                            {% for drop in group.drops %}
+                            {% for drop in group.lines %}
                                 <tr>
                                     <td>{{ drop.name }}</td>
                                     <td class="text-right tabular-nums">{{ drop.prospecting > 0 ? drop.prospecting : '—' }}</td>

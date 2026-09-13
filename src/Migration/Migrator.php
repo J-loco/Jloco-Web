@@ -14,16 +14,16 @@ use RuntimeException;
  * Write migrations so they can safely re-run (IF NOT EXISTS / IF EXISTS): databases created
  * before the runner existed may already contain their changes.
  */
-final class Migrator
+final readonly class Migrator
 {
     /**
      * @param array{login: PDO, game: PDO} $connections
      * @param \Closure(string): void $log
      */
     public function __construct(
-        private readonly array $connections,
-        private readonly string $directory,
-        private readonly \Closure $log,
+        private array $connections,
+        private string $directory,
+        private \Closure $log,
     ) {
     }
 
@@ -63,13 +63,17 @@ final class Migrator
         return $count;
     }
 
-    /** Splits a plain SQL file on ";" at end of line, dropping "--" comment lines. */
-    private static function statements(string $sql): array
+    /**
+     * Splits a plain SQL file on ";" at end of line, dropping "--" comment lines.
+     *
+     * @return list<string>
+     */
+    public static function statements(string $sql): array
     {
-        $lines = array_filter(preg_split('/\R/', $sql), fn (string $line) => !preg_match('/^\s*--/', $line));
-        $statements = array_map('trim', preg_split('/;\s*$/m', implode("\n", $lines)));
+        $lines = array_filter(preg_split('/\R/', $sql), fn (string $line): bool => !preg_match('/^\s*--/', $line));
+        $statements = array_map(trim(...), preg_split('/;\s*$/m', implode("\n", $lines)));
 
-        $statements = array_values(array_filter($statements, fn (string $s) => $s !== ''));
+        $statements = array_values(array_filter($statements, fn (string $s): bool => $s !== ''));
         if ($statements === []) {
             throw new RuntimeException('Empty migration');
         }

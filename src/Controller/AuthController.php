@@ -5,15 +5,19 @@ declare(strict_types=1);
 namespace StarLoco\Web\Controller;
 
 use StarLoco\Web\Captcha;
+use StarLoco\Web\Config;
 use StarLoco\Web\Http\Request;
 use StarLoco\Web\Http\Response;
 use StarLoco\Web\Repository\AccountRepository;
 use StarLoco\Web\Security\Session;
+use StarLoco\Web\Security\Throttle;
+use StarLoco\Web\Service\PasswordResetService;
 
 final class AuthController extends AbstractController
 {
-    private const RESET_ACCOUNT = 'password_reset_account';
+    private const string RESET_ACCOUNT = 'password_reset_account';
 
+    /** @param array<string, string> $params */
     public function login(Request $request, array $params): Response
     {
         if ($this->auth()->account() !== null) {
@@ -32,6 +36,7 @@ final class AuthController extends AbstractController
         return $this->render('pages/login.html.twig', ['error' => null, 'username' => '']);
     }
 
+    /** @param array<string, string> $params */
     public function logout(Request $request, array $params): Response
     {
         $this->auth()->logout();
@@ -39,6 +44,7 @@ final class AuthController extends AbstractController
         return $this->redirectTo('home');
     }
 
+    /** @param array<string, string> $params */
     public function register(Request $request, array $params): Response
     {
         if ($this->auth()->account() !== null) {
@@ -64,15 +70,24 @@ final class AuthController extends AbstractController
                 $this->flash('success', 'Ton compte a été créé, tu peux maintenant te connecter.');
                 return $this->redirectTo('login');
             }
-            $values = array_intersect_key($input, $values);
+            $values = ['username' => $input['username'], 'email' => $input['email'], 'question' => $input['question']];
         }
 
         return $this->render('pages/register.html.twig', ['values' => $values, 'errors' => $errors], $errors === [] ? 200 : 422);
     }
 
-    /** Step 1: account name. Step 2: secret answer (the account is kept in the session). */
+    /**
+     * Forgotten password. With outgoing mail: a reset link is emailed. Without: step 1 account name,
+     * step 2 secret answer (the account is kept in the session).
+     *
+     * @param array<string, string> $params
+     */
     public function passwordReset(Request $request, array $params): Response
     {
+        if ($this->get(Config::class)->mailEnabled()) {
+            return $this->passwordResetByEmail($request);
+        }
+
         $session = $this->get(Session::class);
         $accounts = $this->get(AccountRepository::class);
 
@@ -81,7 +96,12 @@ final class AuthController extends AbstractController
             if ($account === null) {
                 return $this->render('pages/password_reset.html.twig', ['step' => 'account', 'error' => 'Ce nom de compte n\'existe pas.'], 422);
             }
-            $session->set(self::RESET_ACCOUNT, $account->account);
+            $session->set(self::RESET_ACCOUNT, $account->name);
+            return $this->redirectTo('password_reset');
+        }
+
+        if ($request->query('restart') === '1') {
+            $session->remove(self::RESET_ACCOUNT);
             return $this->redirectTo('password_reset');
         }
 
@@ -92,27 +112,58 @@ final class AuthController extends AbstractController
         }
 
         if ($request->isPost() && $request->has('answer')) {
-            $result = $this->auth()->resetPassword($account->account, $request->input('answer'));
+            $result = $this->auth()->resetPasswordWithAnswer($account->name, $request->input('answer'));
             if ($result['error'] === null) {
                 $session->remove(self::RESET_ACCOUNT);
                 return $this->render('pages/password_reset.html.twig', ['step' => 'done', 'password' => $result['password'], 'error' => null]);
             }
-            return $this->render('pages/password_reset.html.twig', ['step' => 'answer', 'account' => $account, 'error' => $result['error']], 422);
+            return $this->render('pages/password_reset.html.twig', ['step' => 'answer', 'question' => $account->question, 'error' => $result['error']], 422);
         }
 
-        if ($request->query('restart') === '1') {
-            $session->remove(self::RESET_ACCOUNT);
+        return $this->render('pages/password_reset.html.twig', ['step' => 'answer', 'question' => $account->question, 'error' => null]);
+    }
+
+    /**
+     * Page of the emailed link: choose a new password.
+     *
+     * @param array<string, string> $params
+     */
+    public function passwordResetConfirm(Request $request, array $params): Response
+    {
+        $resets = $this->get(PasswordResetService::class);
+        if ($resets->accountForLink($params['selector'], $params['token']) === null) {
+            $this->flash('danger', 'Ce lien de réinitialisation n\'est plus valide. Fais une nouvelle demande.');
             return $this->redirectTo('password_reset');
         }
 
-        return $this->render('pages/password_reset.html.twig', ['step' => 'answer', 'account' => $account, 'error' => null]);
+        if ($request->isPost()) {
+            $error = $resets->reset($params['selector'], $params['token'], $request->input('password'), $request->input('password_confirm'));
+            if ($error === null) {
+                $this->flash('success', 'Ton mot de passe a été changé, tu peux te connecter.');
+                return $this->redirectTo('login');
+            }
+            return $this->render('pages/password_reset_confirm.html.twig', ['error' => $error, 'params' => $params], 422);
+        }
+        return $this->render('pages/password_reset_confirm.html.twig', ['error' => null, 'params' => $params]);
     }
 
+    /** @param array<string, string> $params */
     public function captcha(Request $request, array $params): Response
     {
         return new Response($this->get(Captcha::class)->generate(), 200, [
             'Content-Type' => 'image/png',
             'Cache-Control' => 'no-store',
         ]);
+    }
+
+    private function passwordResetByEmail(Request $request): Response
+    {
+        if (!$request->isPost()) {
+            return $this->render('pages/password_reset.html.twig', ['step' => 'email', 'error' => null]);
+        }
+        if (!$this->get(PasswordResetService::class)->request(trim($request->input('account')))) {
+            return $this->render('pages/password_reset.html.twig', ['step' => 'email', 'error' => Throttle::message()], 429);
+        }
+        return $this->render('pages/password_reset.html.twig', ['step' => 'email_sent', 'error' => null]);
     }
 }

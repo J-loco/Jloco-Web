@@ -18,9 +18,9 @@ use Throwable;
 /**
  * Front controller pipeline: legacy redirects → session → remember-me → routing → CSRF → controller.
  */
-final class Kernel
+final readonly class Kernel
 {
-    public function __construct(private readonly Container $container)
+    public function __construct(private Container $container)
     {
     }
 
@@ -100,7 +100,7 @@ final class Kernel
                 "style-src 'self' 'unsafe-inline'",
                 "img-src 'self' data: https:",
                 "connect-src 'self' $dedipass",
-                "frame-src https://*.dedipass.com",
+                'frame-src https://*.dedipass.com',
                 "object-src 'none'",
                 "base-uri 'self'",
                 "form-action 'self'",

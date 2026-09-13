@@ -7,12 +7,12 @@ namespace StarLoco\Web\Security;
 /**
  * One token per session, sent as the "_csrf" field of every POST form.
  */
-final class Csrf
+final readonly class Csrf
 {
-    public const FIELD = '_csrf';
-    private const SESSION_KEY = '_csrf';
+    public const string FIELD = '_csrf';
+    private const string SESSION_KEY = '_csrf';
 
-    public function __construct(private readonly Session $session)
+    public function __construct(private Session $session)
     {
     }
 

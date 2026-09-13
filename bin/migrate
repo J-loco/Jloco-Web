@@ -23,7 +23,9 @@ use StarLoco\Web\Migration\WebUserProvisioner;
 
 require __DIR__ . '/../config/autoload.php';
 
-$log = static fn (string $message) => fwrite(STDOUT, '[migrate] ' . $message . PHP_EOL);
+$log = static function (string $message): void {
+    fwrite(STDOUT, '[migrate] ' . $message . PHP_EOL);
+};
 $config = Config::fromEnvironment();
 $database = new Database($config);
 
@@ -32,8 +34,8 @@ $database = new Database($config);
 $deadline = time() + (int) (getenv('MIGRATE_WAIT_SECONDS') ?: 300);
 while (true) {
     try {
-        $login = $database->connect($config->loginDbName);
-        $game = $database->connect($config->gameDbName);
+        $login = $database->open($config->loginDbName);
+        $game = $database->open($config->gameDbName);
         $ready = $login->query("SHOW TABLES LIKE 'world_accounts'")->fetchColumn() !== false
             && $game->query("SHOW TABLES LIKE 'gifts'")->fetchColumn() !== false;
         if ($ready) {
@@ -59,7 +61,8 @@ try {
     $webUser = getenv('WEB_DB_USER') ?: '';
     $webPassword = getenv('WEB_DB_PASSWORD') ?: '';
     if ($webUser !== '') {
-        (new WebUserProvisioner($login))->provision($webUser, $webPassword, ['login' => $config->loginDbName, 'game' => $config->gameDbName]);
+        $gameDatabases = array_values(array_unique([$config->gameDbName, ...array_values($config->shopServers)]));
+        new WebUserProvisioner($login)->provision($webUser, $webPassword, $config->loginDbName, $gameDatabases);
         $log("database user '$webUser' provisioned");
     }
 } catch (Throwable $e) {

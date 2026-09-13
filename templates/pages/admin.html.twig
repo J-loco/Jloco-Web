@@ -26,7 +26,7 @@
                         <li class="flex items-center justify-between gap-3 px-5 py-2.5">
                             <div class="min-w-0">
                                 <p class="truncate font-medium text-stone-900 dark:text-stone-100">{{ item.title }}</p>
-                                <p class="text-xs text-stone-500 dark:text-stone-400">{{ item.date|date_fr('short') }}{% if item.author %} · {{ item.author }}{% endif %}</p>
+                                <p class="text-xs text-stone-500 dark:text-stone-400">{{ item.publishedAt|date_fr('short') }}{% if item.author %} · {{ item.author }}{% endif %}</p>
                             </div>
                             <form method="post" action="{{ url('admin_news_delete', {id: item.id}) }}" data-confirm="Supprimer « {{ item.title }} » ?">
                                 {{ csrf_field() }}
@@ -57,10 +57,10 @@
                     {% for item in gameNews %}
                         <li class="flex items-center justify-between gap-3 px-5 py-2.5">
                             <div class="min-w-0">
-                                <p class="truncate font-medium text-stone-900 dark:text-stone-100">{{ item.title_fr }}</p>
-                                <p class="text-xs"><span class="badge badge-neutral">{{ gameNewsTypes[item.icon] ?? item.icon }}</span></p>
+                                <p class="truncate font-medium text-stone-900 dark:text-stone-100">{{ item.title }}</p>
+                                <p class="text-xs"><span class="badge badge-neutral">{{ gameNewsTypes[item.type] ?? item.type }}</span></p>
                             </div>
-                            <form method="post" action="{{ url('admin_game_news_delete', {id: item.id}) }}" data-confirm="Supprimer « {{ item.title_fr }} » ?">
+                            <form method="post" action="{{ url('admin_game_news_delete', {id: item.id}) }}" data-confirm="Supprimer « {{ item.title }} » ?">
                                 {{ csrf_field() }}
                                 <button type="submit" class="btn btn-ghost btn-sm text-red-600 dark:text-red-400">Supprimer</button>
                             </form>

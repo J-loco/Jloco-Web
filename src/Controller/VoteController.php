@@ -11,6 +11,7 @@ use StarLoco\Web\Service\VoteService;
 
 final class VoteController extends AbstractController
 {
+    /** @param array<string, string> $params */
     public function show(Request $request, array $params): Response
     {
         $account = $this->auth()->account();
@@ -19,16 +20,18 @@ final class VoteController extends AbstractController
         ]);
     }
 
-    /** Credits the vote then sends the player to the voting site. */
+    /**
+     * Credits the vote then sends the player to the voting site.
+     *
+     * @param array<string, string> $params
+     */
     public function vote(Request $request, array $params): Response
     {
-        if ($redirect = $this->requireLogin()) {
-            return $redirect;
-        }
-        $votes = $this->get(VoteService::class);
         $account = $this->auth()->account();
-
-        if (!$votes->vote($account)) {
+        if ($account === null) {
+            return $this->loginRedirect();
+        }
+        if (!$this->get(VoteService::class)->vote($account)) {
             $this->flash('warning', 'Tu as déjà voté récemment, reviens un peu plus tard.');
             return $this->redirectTo('vote');
         }

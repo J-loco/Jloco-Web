@@ -12,7 +12,8 @@ use StarLoco\Web\Service\AuthService;
 use StarLoco\Web\View\View;
 
 /**
- * Helpers shared by controllers. Actions receive (Request $request, array $params) and return a Response.
+ * Helpers shared by controllers. Actions receive (Request $request, array<string, string> $params)
+ * and return a Response.
  */
 abstract class AbstractController
 {
@@ -49,12 +50,9 @@ abstract class AbstractController
         return $this->container->get(AuthService::class);
     }
 
-    /** Redirect to the login page when nobody is logged in; null otherwise. */
-    protected function requireLogin(): ?Response
+    /** For pages that need a logged-in account: controllers call it when auth()->account() is null. */
+    protected function loginRedirect(): Response
     {
-        if ($this->auth()->account() !== null) {
-            return null;
-        }
         $this->flash('info', 'Connecte-toi pour accéder à cette page.');
         return $this->redirectTo('login');
     }

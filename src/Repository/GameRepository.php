@@ -5,22 +5,29 @@ declare(strict_types=1);
 namespace StarLoco\Web\Repository;
 
 use StarLoco\Web\Database;
+use StarLoco\Web\Model\Drop;
+use StarLoco\Web\Model\MapPosition;
 
 /**
- * Static and per-account data from the game database (starloco_game): jobs, drops, maps, gifts.
+ * Static data from the game database (starloco_game): jobs, drops, maps; plus sub-area names
+ * (login database) and shop gifts.
  */
-final class GameRepository
+final readonly class GameRepository
 {
-    public function __construct(private readonly Database $database)
+    public function __construct(private Database $database)
     {
     }
 
-    /** Jobs players can learn (those using a tool). @return array<int, string> id => name */
+    /**
+     * Jobs players can learn (those using a tool).
+     *
+     * @return array<int, string> id => name
+     */
     public function jobs(): array
     {
         $jobs = [];
         foreach ($this->database->game()->query("SELECT id, name FROM jobs_data WHERE tools != '' ORDER BY name")->fetchAll() as $job) {
-            $jobs[(int) $job->id] = $job->name;
+            $jobs[(int) $job->id] = (string) $job->name;
         }
         return $jobs;
     }
@@ -29,7 +36,7 @@ final class GameRepository
      * Drops whose monster or item name contains $term.
      *
      * @param 'monster'|'item' $by
-     * @return list<object{monster_id: int, monster_name: string, item_id: int, item_name: string, ceil: int, percentGrade1: float, percentGrade5: float}>
+     * @return list<Drop>
      */
     public function searchDrops(string $by, string $term, int $limit = 500): array
     {
@@ -37,23 +44,18 @@ final class GameRepository
         $query = $this->database->game()->prepare(
             "SELECT m.id AS monster_id, m.name AS monster_name, i.id AS item_id, i.name AS item_name, d.ceil, d.percentGrade1, d.percentGrade5
              FROM drops d JOIN monsters m ON m.id = d.monsterId JOIN item_template i ON i.id = d.objectId
-             WHERE LOWER($column) LIKE ? ORDER BY $column, d.percentGrade5 DESC LIMIT ?"
+             WHERE LOWER($column) LIKE ? ORDER BY $column, d.percentGrade5 DESC LIMIT ?",
         );
         $query->execute(['%' . mb_strtolower($term) . '%', $limit]);
-        return $query->fetchAll();
+        return array_map(Drop::fromRow(...), $query->fetchAll());
     }
 
-    /** maps.mappos is "x,y,subAreaId". @return object{x: string, y: string, subArea: int}|null */
-    public function mapPosition(int $mapId): ?object
+    public function mapPosition(int $mapId): ?MapPosition
     {
         $query = $this->database->game()->prepare('SELECT mappos FROM maps WHERE id = ?');
         $query->execute([$mapId]);
         $mappos = $query->fetchColumn();
-        if ($mappos === false) {
-            return null;
-        }
-        [$x, $y, $subArea] = array_pad(explode(',', (string) $mappos), 3, '0');
-        return (object) ['x' => $x, 'y' => $y, 'subArea' => (int) $subArea];
+        return $mappos === false ? null : MapPosition::fromMappos((string) $mappos);
     }
 
     /** Sub-area names live in the login database. */
@@ -65,11 +67,14 @@ final class GameRepository
         return $name === false ? null : (string) $name;
     }
 
-    /** Queues an item for the account; the game server delivers it at next login (same format as Account.addGift). */
-    public function addGift(int $accountId, int $template, int $quantity, bool $maxStats): void
+    /**
+     * Queues an item for the account in the given game database; the game server delivers it at
+     * next login (same "template,quantity,jp" format as Account.addGift in StarLoco-Game).
+     */
+    public function addGift(string $gameDatabase, int $accountId, int $template, int $quantity, bool $maxStats): void
     {
         $gift = $template . ',' . $quantity . ',' . ($maxStats ? 1 : 0);
-        $game = $this->database->game();
+        $game = $gameDatabase === $this->database->gameDatabaseName() ? $this->database->game() : $this->database->connect($gameDatabase);
         $game->prepare("INSERT IGNORE INTO gifts (id, objects) VALUES (?, '')")->execute([$accountId]);
         $game->prepare("UPDATE gifts SET objects = IF(objects = '', ?, CONCAT(objects, ';', ?)) WHERE id = ?")->execute([$gift, $gift, $accountId]);
     }

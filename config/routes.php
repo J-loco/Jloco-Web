@@ -36,6 +36,7 @@ return [
     Route::post('/logout', 'logout', [AuthController::class, 'logout']),
     Route::form('/register', 'register', [AuthController::class, 'register']),
     Route::form('/password/reset', 'password_reset', [AuthController::class, 'passwordReset']),
+    Route::form('/password/reset/{selector:[a-f0-9]{24}}/{token:[a-f0-9]{64}}', 'password_reset_confirm', [AuthController::class, 'passwordResetConfirm']),
     Route::get('/captcha.png', 'captcha', [AuthController::class, 'captcha']),
 
     Route::get('/account', 'account', [AccountController::class, 'show']),

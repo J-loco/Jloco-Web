@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace StarLoco\Web\Repository;
 
 use StarLoco\Web\Database;
+use StarLoco\Web\Model\Account;
+use StarLoco\Web\Model\Credentials;
+use StarLoco\Web\Model\Voter;
 use StarLoco\Web\Support\Text;
 
 /**
@@ -13,61 +16,65 @@ use StarLoco\Web\Support\Text;
  * Its text columns are latin1: a lookup value latin1 cannot represent cannot match, and comparing
  * it would raise a collation error, so such lookups return "not found" without querying.
  */
-final class AccountRepository
+final readonly class AccountRepository
 {
-    /** Columns the portal reads; never select "pass" outside findCredentials(). */
-    private const PROFILE = 'guid, account, pseudo, email, points, votes, totalVotes, heurevote, dateRegister, lastConnectionDate, question, showOrHide, showOrHidePos';
+    /** Columns of Account; the password hash is only read by findCredentials(). */
+    private const string PROFILE = 'guid, account, pseudo, email, points, votes, totalVotes, heurevote, dateRegister, lastConnectionDate, question, showOrHide, showOrHidePos';
 
     /** Privacy flags an account can toggle, by public name. */
-    public const PRIVACY_FLAGS = ['armory' => 'showOrHide', 'position' => 'showOrHidePos'];
+    public const array PRIVACY_FLAGS = ['armory' => 'showOrHide', 'position' => 'showOrHidePos'];
 
-    public function __construct(private readonly Database $database)
+    public function __construct(private Database $database)
     {
     }
 
-    public function find(int $id): ?object
+    public function find(int $id): ?Account
     {
         $query = $this->database->login()->prepare('SELECT ' . self::PROFILE . ' FROM world_accounts WHERE guid = ?');
         $query->execute([$id]);
-        return $query->fetch() ?: null;
+        $row = $query->fetch();
+        return $row ? Account::fromRow($row) : null;
     }
 
-    public function findByName(string $account): ?object
+    public function findByName(string $name): ?Account
     {
-        if (!Text::fitsLatin1($account)) {
+        if (!Text::fitsLatin1($name)) {
             return null;
         }
         $query = $this->database->login()->prepare('SELECT ' . self::PROFILE . ' FROM world_accounts WHERE account = ?');
-        $query->execute([$account]);
-        return $query->fetch() ?: null;
+        $query->execute([$name]);
+        $row = $query->fetch();
+        return $row ? Account::fromRow($row) : null;
     }
 
-    /** @return object{guid: int, account: string, pass: string}|null */
-    public function findCredentials(string $account): ?object
+    public function findCredentials(string $name): ?Credentials
     {
-        if (!Text::fitsLatin1($account)) {
+        if (!Text::fitsLatin1($name)) {
             return null;
         }
-        $query = $this->database->login()->prepare('SELECT guid, account, pass FROM world_accounts WHERE account = ?');
-        $query->execute([$account]);
-        return $query->fetch() ?: null;
+        $query = $this->database->login()->prepare('SELECT guid, pass FROM world_accounts WHERE account = ?');
+        $query->execute([$name]);
+        $row = $query->fetch();
+        return $row ? new Credentials((int) $row->guid, (string) $row->pass) : null;
     }
 
-    public function exists(string $account): bool
+    public function exists(string $name): bool
     {
-        if (!Text::fitsLatin1($account)) {
+        if (!Text::fitsLatin1($name)) {
             return false;
         }
         $query = $this->database->login()->prepare('SELECT 1 FROM world_accounts WHERE account = ?');
-        $query->execute([$account]);
+        $query->execute([$name]);
         return $query->fetchColumn() !== false;
     }
 
-    public function create(string $account, string $passwordHash, string $email, string $question, string $answer): void
+    public function create(string $name, string $passwordHash, string $email, string $question, string $answer): int
     {
-        $this->database->login()
+        $login = $this->database->login();
+        $login
             ->prepare('INSERT INTO world_accounts (account, pass, email, question, reponse, dateRegister) VALUES (?, ?, ?, ?, ?, ?)')
-            ->execute([$account, $passwordHash, $email, $question, $answer, date('d/m/y')]);
+            ->execute([$name, $passwordHash, $email, $question, $answer, date('d/m/y')]);
+        return (int) $login->lastInsertId();
     }
 
     public function answerMatches(int $id, string $answer): bool
@@ -109,22 +116,18 @@ final class AccountRepository
     public function creditVote(int $id, int $points, int $now, int $cooldown): bool
     {
         $query = $this->database->login()->prepare(
-            'UPDATE world_accounts SET votes = votes + 1, totalVotes = totalVotes + 1, points = points + ?, heurevote = ? WHERE guid = ? AND heurevote <= ?'
+            'UPDATE world_accounts SET votes = votes + 1, totalVotes = totalVotes + 1, points = points + ?, heurevote = ? WHERE guid = ? AND heurevote <= ?',
         );
         $query->execute([$points, $now, $id, $now - $cooldown]);
         return $query->rowCount() === 1;
     }
 
-    /**
-     * Account names are login credentials and must never be displayed: only the pseudo is returned.
-     *
-     * @return list<object{pseudo: ?string, votes: int}>
-     */
+    /** @return list<Voter> */
     public function topVoters(int $limit = 50): array
     {
         $query = $this->database->login()->prepare('SELECT pseudo, votes FROM world_accounts WHERE votes > 0 ORDER BY votes DESC LIMIT ?');
         $query->execute([$limit]);
-        return $query->fetchAll();
+        return array_map(Voter::fromRow(...), $query->fetchAll());
     }
 
     public function count(): int

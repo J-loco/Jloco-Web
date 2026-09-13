@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Code style, static analysis, unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: gd, intl, pdo_mysql
+          coverage: none
+          tools: composer:v2
+      - run: composer install --no-interaction --no-progress --prefer-dist
+      - run: composer cs
+      - run: composer stan
+      - run: composer rector
+      - run: composer test:unit
+
+  integration:
+    name: Integration tests (MariaDB)
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:11.3
+        env:
+          MARIADB_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s --health-timeout=5s --health-retries=30
+    env:
+      TEST_DB_HOST: 127.0.0.1
+      TEST_DB_USER: root
+      TEST_DB_PASS: root
+    steps:
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: gd, intl, pdo_mysql
+          coverage: none
+          tools: composer:v2
+      - run: composer install --no-interaction --no-progress --prefer-dist
+      - run: composer test:integration
+
+  images:
+    name: Docker images (Tailwind build, production)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - name: Build the production image (compiles the Tailwind CSS from the templates)
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          target: production
+          push: false
+          tags: starloco/web:ci
+
+  experience:
+    name: XP tables in sync with StarLoco-Game
+    runs-on: ubuntu-latest
+    # StarLoco-Game is private: add a read-only token as the STARLOCO_GAME_TOKEN secret to enable this job.
+    env:
+      HAS_GAME_TOKEN: ${{ secrets.STARLOCO_GAME_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@v7
+        if: env.HAS_GAME_TOKEN == 'true'
+      - uses: actions/checkout@v7
+        if: env.HAS_GAME_TOKEN == 'true'
+        with:
+          repository: JimmyMtl/Starloco-Game
+          token: ${{ secrets.STARLOCO_GAME_TOKEN }}
+          path: starloco-game
+          sparse-checkout: scripts/data/Experience.lua
+          sparse-checkout-cone-mode: false
+      - uses: shivammathur/setup-php@v2
+        if: env.HAS_GAME_TOKEN == 'true'
+        with:
+          php-version: '8.4'
+          coverage: none
+      - name: Compare src/Game/Experience.php with Experience.lua
+        if: env.HAS_GAME_TOKEN == 'true'
+        run: php bin/sync-experience --check starloco-game/scripts/data/Experience.lua
+      - name: Skipped
+        if: env.HAS_GAME_TOKEN != 'true'
+        run: echo "STARLOCO_GAME_TOKEN is not configured, XP table check skipped."

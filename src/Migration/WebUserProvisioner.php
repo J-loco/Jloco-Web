@@ -10,34 +10,35 @@ use PDO;
 /**
  * Creates (or updates) the least-privilege MariaDB account the portal connects with.
  *
- * The portal can read both databases but only write the tables below. Keep this list in sync
- * with the queries in pages/ and include/ (later: src/Repository/).
+ * The portal can read the login and game databases but only write the tables below. Keep this list
+ * in sync with the repositories (src/Repository/) and security stores (src/Security/).
  */
-final class WebUserProvisioner
+final readonly class WebUserProvisioner
 {
-    /** Table => privileges beyond SELECT, per database ("login" / "game"). */
-    private const WRITES = [
-        'login' => [
-            'world_accounts' => 'INSERT, UPDATE',                    // register, profile, vote, shop points
-            'website_remember_tokens' => 'INSERT, DELETE',
-            'website_auth_attempts' => 'INSERT, DELETE',
-            'website_users_votes' => 'INSERT, DELETE',
-            'website_shop_objects_purchases' => 'INSERT',
-            'website_shop_points_purchases' => 'INSERT',
-            'website_timeline_news' => 'INSERT, DELETE',             // administration
-            'client_rss_news' => 'INSERT, DELETE',                   // administration
-        ],
-        'game' => [
-            'gifts' => 'INSERT, UPDATE',                             // shop delivery
-        ],
+    /** Login database: table => privileges beyond SELECT. */
+    private const array LOGIN_WRITES = [
+        'world_accounts' => 'INSERT, UPDATE',                    // register, account page, votes, shop points
+        'website_remember_tokens' => 'INSERT, DELETE',
+        'website_auth_attempts' => 'INSERT, DELETE',
+        'website_password_resets' => 'INSERT, DELETE',
+        'website_users_votes' => 'INSERT, DELETE',
+        'website_shop_objects_purchases' => 'INSERT',
+        'website_shop_points_purchases' => 'INSERT',
+        'website_timeline_news' => 'INSERT, DELETE',             // administration
+        'client_rss_news' => 'INSERT, DELETE',                   // administration
     ];
 
-    public function __construct(private readonly PDO $admin)
+    /** Every game database (main one and shop ones): table => privileges beyond SELECT. */
+    private const array GAME_WRITES = [
+        'gifts' => 'INSERT, UPDATE',                             // shop delivery
+    ];
+
+    public function __construct(private PDO $admin)
     {
     }
 
-    /** @param array{login: string, game: string} $databases */
-    public function provision(string $user, string $password, array $databases): void
+    /** @param list<string> $gameDatabases */
+    public function provision(string $user, string $password, string $loginDatabase, array $gameDatabases): void
     {
         if (!preg_match('/^[A-Za-z0-9_]{1,32}$/', $user)) {
             throw new InvalidArgumentException('Invalid database user name: ' . $user);
@@ -48,16 +49,22 @@ final class WebUserProvisioner
 
         $account = "'$user'@'%'";
         $secret = $this->admin->quote($password);
-
         $this->admin->exec("CREATE USER IF NOT EXISTS $account IDENTIFIED BY $secret");
         $this->admin->exec("ALTER USER $account IDENTIFIED BY $secret");
 
-        foreach ($databases as $key => $database) {
-            $db = self::identifier($database);
-            $this->admin->exec("GRANT SELECT ON $db.* TO $account");
-            foreach (self::WRITES[$key] as $table => $privileges) {
-                $this->admin->exec("GRANT $privileges ON $db." . self::identifier($table) . " TO $account");
-            }
+        $this->grant($account, $loginDatabase, self::LOGIN_WRITES);
+        foreach (array_unique($gameDatabases) as $gameDatabase) {
+            $this->grant($account, $gameDatabase, self::GAME_WRITES);
+        }
+    }
+
+    /** @param array<string, string> $writes */
+    private function grant(string $account, string $database, array $writes): void
+    {
+        $db = self::identifier($database);
+        $this->admin->exec("GRANT SELECT ON $db.* TO $account");
+        foreach ($writes as $table => $privileges) {
+            $this->admin->exec("GRANT $privileges ON $db." . self::identifier($table) . " TO $account");
         }
     }
 

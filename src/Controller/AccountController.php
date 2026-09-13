@@ -12,56 +12,66 @@ use StarLoco\Web\Service\Dedipass;
 
 final class AccountController extends AbstractController
 {
+    /** @param array<string, string> $params */
     public function show(Request $request, array $params): Response
     {
-        if ($redirect = $this->requireLogin()) {
-            return $redirect;
-        }
         $account = $this->auth()->account();
+        if ($account === null) {
+            return $this->loginRedirect();
+        }
 
         return $this->render('pages/account.html.twig', [
             'account' => $account,
-            'characters' => $this->get(PlayerRepository::class)->byAccount((int) $account->guid),
+            'characters' => $this->get(PlayerRepository::class)->byAccount($account->id),
             'dedipass' => $this->get(Dedipass::class)->isEnabled(),
         ]);
     }
 
+    /** @param array<string, string> $params */
     public function privacy(Request $request, array $params): Response
     {
-        if ($redirect = $this->requireLogin()) {
-            return $redirect;
+        $account = $this->auth()->account();
+        if ($account === null) {
+            return $this->loginRedirect();
         }
-        $this->get(AccountRepository::class)->togglePrivacy((int) $this->auth()->accountId(), $params['flag']);
+        $flag = $params['flag'];
+        if (!array_key_exists($flag, AccountRepository::PRIVACY_FLAGS)) {
+            return $this->notFound();
+        }
+        $this->get(AccountRepository::class)->togglePrivacy($account->id, $flag);
         $this->flash('success', 'Préférence enregistrée.');
         return $this->redirectTo('account');
     }
 
+    /** @param array<string, string> $params */
     public function password(Request $request, array $params): Response
     {
-        if ($redirect = $this->requireLogin()) {
-            return $redirect;
+        $account = $this->auth()->account();
+        if ($account === null) {
+            return $this->loginRedirect();
         }
-        $error = $this->auth()->changePassword(
-            (int) $this->auth()->accountId(),
-            $request->input('answer'),
-            $request->input('password'),
-            $request->input('password_confirm'),
-        );
-        $error === null
-            ? $this->flash('success', 'Ton mot de passe a été changé.')
-            : $this->flash('danger', $error);
+        $error = $this->auth()->changePassword($account->id, $request->input('answer'), $request->input('password'), $request->input('password_confirm'));
+        if ($error === null) {
+            $this->flash('success', 'Ton mot de passe a été changé.');
+        } else {
+            $this->flash('danger', $error);
+        }
         return Response::redirect($this->url('account') . '#password');
     }
 
+    /** @param array<string, string> $params */
     public function dedipass(Request $request, array $params): Response
     {
-        if ($redirect = $this->requireLogin()) {
-            return $redirect;
+        $account = $this->auth()->account();
+        if ($account === null) {
+            return $this->loginRedirect();
         }
-        $result = $this->get(Dedipass::class)->redeem($this->auth()->account(), $request->input('code'), $request->input('rate'));
-        $result['error'] === null
-            ? $this->flash('success', 'Tu as été crédité de ' . $result['points'] . ' points.')
-            : $this->flash('danger', $result['error']);
+        $result = $this->get(Dedipass::class)->redeem($account, $request->input('code'), $request->input('rate'));
+        if ($result['error'] === null) {
+            $this->flash('success', 'Tu as été crédité de ' . $result['points'] . ' points.');
+        } else {
+            $this->flash('danger', $result['error']);
+        }
         return Response::redirect($this->url('account') . '#points');
     }
 }

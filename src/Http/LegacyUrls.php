@@ -8,9 +8,9 @@ namespace StarLoco\Web\Http;
  * 301 redirects from the old "index.php?page=<name>" URLs (bookmarks, forum posts, the launcher's
  * registerUrl) to the real paths.
  */
-final class LegacyUrls
+final readonly class LegacyUrls
 {
-    private const PAGES = [
+    private const array PAGES = [
         'index' => 'home',
         'join' => 'join',
         'cgu' => 'terms',
@@ -28,7 +28,7 @@ final class LegacyUrls
         'logout' => 'home',
     ];
 
-    public function __construct(private readonly Router $router)
+    public function __construct(private Router $router)
     {
     }
 

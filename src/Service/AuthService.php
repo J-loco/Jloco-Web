@@ -6,7 +6,9 @@ namespace StarLoco\Web\Service;
 
 use StarLoco\Web\Captcha;
 use StarLoco\Web\Config;
+use StarLoco\Web\Model\Account;
 use StarLoco\Web\Repository\AccountRepository;
+use StarLoco\Web\Security\PasswordHasher;
 use StarLoco\Web\Security\RememberMe;
 use StarLoco\Web\Security\Session;
 use StarLoco\Web\Security\Throttle;
@@ -17,9 +19,18 @@ use StarLoco\Web\Support\Text;
  */
 final class AuthService
 {
-    private const SESSION_ACCOUNT = 'account_id';
+    private const string SESSION_ACCOUNT = 'account_id';
 
-    private ?object $account = null;
+    /** Account names the login server accepts (StarLoco-Login AccountName.verify: [A-Za-z0-9.@-]+). */
+    public const string ACCOUNT_NAME_PATTERN = '/^[A-Za-z0-9.@-]{3,30}$/';
+
+    /**
+     * Printable ASCII only: the Dofus client transmits each character on 8 bits and the login server
+     * hashes the decoded string, so non-ASCII passwords would not match between site and game.
+     */
+    public const string PASSWORD_PATTERN = '/^[\x20-\x7E]{6,50}$/';
+
+    private ?Account $account = null;
     private bool $loaded = false;
 
     public function __construct(
@@ -28,18 +39,13 @@ final class AuthService
         private readonly RememberMe $rememberMe,
         private readonly Throttle $throttle,
         private readonly Captcha $captcha,
+        private readonly PasswordHasher $hasher,
         private readonly Config $config,
     ) {
     }
 
-    /** Password format shared with StarLoco-Login; changing it requires changing the login server too. */
-    public static function hashPassword(string $password): string
-    {
-        return hash('sha512', md5($password));
-    }
-
-    /** The logged-in account (profile columns), loaded once per request. */
-    public function account(): ?object
+    /** The logged-in account, loaded once per request. */
+    public function account(): ?Account
     {
         if (!$this->loaded) {
             $this->loaded = true;
@@ -54,7 +60,7 @@ final class AuthService
 
     public function accountId(): ?int
     {
-        return $this->account() !== null ? (int) $this->account()->guid : null;
+        return $this->account()?->id;
     }
 
     public function isAdmin(): bool
@@ -69,16 +75,19 @@ final class AuthService
             return Throttle::message();
         }
 
-        $account = $this->accounts->findCredentials($username);
-        if ($account === null || !hash_equals((string) $account->pass, self::hashPassword($password))) {
+        $credentials = $this->accounts->findCredentials($username);
+        if ($credentials === null || !$this->hasher->verify($password, $credentials->passwordHash)) {
             $this->throttle->recordFailure(Throttle::LOGIN);
             return 'Nom de compte ou mot de passe incorrect.';
         }
 
         $this->throttle->clear(Throttle::LOGIN);
-        $this->loginAs((int) $account->guid);
+        if ($this->hasher->needsRehash($credentials->passwordHash)) {
+            $this->accounts->updatePassword($credentials->accountId, $this->hasher->hash($password));
+        }
+        $this->loginAs($credentials->accountId);
         if ($remember) {
-            $this->rememberMe->issue((int) $account->guid);
+            $this->rememberMe->issue($credentials->accountId);
         }
         return null;
     }
@@ -108,14 +117,14 @@ final class AuthService
     public function register(array $input): array
     {
         $errors = [];
-        if (!preg_match('/^[A-Za-z0-9_-]{3,30}$/', $input['username'])) {
-            $errors['username'] = 'De 3 à 30 caractères : lettres, chiffres, « - » et « _ ».';
+        if (!preg_match(self::ACCOUNT_NAME_PATTERN, $input['username'])) {
+            $errors['username'] = 'De 3 à 30 caractères : lettres, chiffres, « . », « @ » et « - ».';
         }
         if (!filter_var($input['email'], FILTER_VALIDATE_EMAIL) || strlen($input['email']) > 100) {
             $errors['email'] = 'Adresse email invalide.';
         }
-        if (mb_strlen($input['password']) < 6 || mb_strlen($input['password']) > 50) {
-            $errors['password'] = 'Entre 6 et 50 caractères.';
+        if (!preg_match(self::PASSWORD_PATTERN, $input['password'])) {
+            $errors['password'] = self::passwordError($input['password'], $input['password']);
         } elseif (!hash_equals($input['password'], $input['password_confirm'])) {
             $errors['password_confirm'] = 'Les mots de passe ne sont pas identiques.';
         }
@@ -139,7 +148,7 @@ final class AuthService
         }
 
         if ($errors === []) {
-            $this->accounts->create($input['username'], self::hashPassword($input['password']), $input['email'], trim($input['question']), trim($input['answer']));
+            $this->accounts->create($input['username'], $this->hasher->hash($input['password']), $input['email'], trim($input['question']), trim($input['answer']));
         }
         return $errors;
     }
@@ -154,29 +163,26 @@ final class AuthService
             $this->throttle->recordFailure(Throttle::SECRET_ANSWER);
             return 'La réponse secrète est incorrecte.';
         }
-        if (mb_strlen($password) < 6 || mb_strlen($password) > 50) {
-            return 'Le mot de passe doit faire entre 6 et 50 caractères.';
-        }
-        if (!hash_equals($password, $confirm)) {
-            return 'Les mots de passe ne sont pas identiques.';
+        if ($error = self::passwordError($password, $confirm)) {
+            return $error;
         }
         $this->throttle->clear(Throttle::SECRET_ANSWER);
-        $this->accounts->updatePassword($accountId, self::hashPassword($password));
+        $this->accounts->updatePassword($accountId, $this->hasher->hash($password));
         return null;
     }
 
     /**
-     * Resets a forgotten password with the secret answer.
+     * Resets a forgotten password with the secret answer (used when email is not configured).
      *
      * @return array{error: ?string, password: ?string} the new random password on success
      */
-    public function resetPassword(string $account, string $answer): array
+    public function resetPasswordWithAnswer(string $name, string $answer): array
     {
         if ($this->throttle->isBlocked(Throttle::PASSWORD_RESET)) {
             return ['error' => Throttle::message(), 'password' => null];
         }
-        $row = $this->accounts->findByName($account);
-        if ($row === null || !$this->accounts->answerMatches((int) $row->guid, $answer)) {
+        $account = $this->accounts->findByName($name);
+        if ($account === null || !$this->accounts->answerMatches($account->id, $answer)) {
             $this->throttle->recordFailure(Throttle::PASSWORD_RESET);
             return ['error' => 'La réponse secrète est incorrecte.', 'password' => null];
         }
@@ -187,8 +193,20 @@ final class AuthService
             $password .= $alphabet[random_int(0, strlen($alphabet) - 1)];
         }
         $this->throttle->clear(Throttle::PASSWORD_RESET);
-        $this->accounts->updatePassword((int) $row->guid, self::hashPassword($password));
+        $this->accounts->updatePassword($account->id, $this->hasher->hash($password));
         return ['error' => null, 'password' => $password];
+    }
+
+    /** Validation message for a new password, or null when it is acceptable. */
+    public static function passwordError(string $password, string $confirm): ?string
+    {
+        if (!preg_match(self::PASSWORD_PATTERN, $password)) {
+            return 'Entre 6 et 50 caractères, sans accents ni émojis.';
+        }
+        if (!hash_equals($password, $confirm)) {
+            return 'Les mots de passe ne sont pas identiques.';
+        }
+        return null;
     }
 
     private function loginAs(int $accountId): void
