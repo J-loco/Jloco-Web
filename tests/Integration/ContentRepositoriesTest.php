@@ -38,20 +38,22 @@ final class ContentRepositoriesTest extends IntegrationTestCase
     {
         $account = $this->createAccount('alice');
         $base = ['account' => $account, 'color1' => 0, 'color2' => 0, 'color3' => 0, 'kamas' => 0, 'spellboost' => 0, 'capital' => 0, 'size' => 100, 'gfx' => 80, 'map' => 7411, 'cell' => 1, 'spells' => '', 'objets' => '', 'storeObjets' => '', 'server' => 601, 'sexe' => 1, 'class' => 8];
-        $this->insert($this->login(), 'world_players', $base + ['name' => 'Staff', 'groupe' => 1, 'level' => 200, 'xp' => 9_000_000_000, 'jobs' => '']);
+        $this->insert($this->login(), 'world_players', $base + ['name' => 'Staff', 'groupe' => 1, 'level' => 200, 'xp' => 9_000_000_000, 'jobs' => '2,5000']);
+        $this->insert($this->login(), 'world_players', $base + ['name' => 'NormalDefault', 'level' => 75, 'xp' => 7_000_000, 'honor' => 42, 'deshonor' => 3, 'jobs' => '2,200']);
         $this->insert($this->login(), 'world_players', $base + ['name' => 'Iopette', 'groupe' => -1, 'level' => 50, 'xp' => 5_350_000, 'honor' => 10, 'jobs' => '24,140;2,50']);
         $this->insert($this->login(), 'world_players', $base + ['name' => 'Cra', 'groupe' => -1, 'level' => 10, 'xp' => 19_200, 'honor' => 99, 'jobs' => '2,999', 'deshonor' => 2, 'logged' => 1]);
 
         $players = new PlayerRepository($this->database);
-        self::assertSame(['Iopette', 'Cra'], array_map(static fn (\StarLoco\Web\Model\Character $c): string => $c->name, $players->topByXp(10)));
-        self::assertSame(['Cra', 'Iopette'], array_map(static fn (\StarLoco\Web\Model\Character $c): string => $c->name, $players->topByHonor(10)));
-        self::assertSame(3, count($players->byAccount($account)));
-        self::assertSame(['Cra'], array_map(static fn (\StarLoco\Web\Model\Character $c): string => $c->name, $players->wanted()));
-        self::assertTrue($players->wanted()[0]->online);
+        self::assertSame(['NormalDefault', 'Iopette', 'Cra'], array_map(static fn (\StarLoco\Web\Model\Character $c): string => $c->name, $players->topByXp(10)));
+        self::assertSame(['Cra', 'NormalDefault', 'Iopette'], array_map(static fn (\StarLoco\Web\Model\Character $c): string => $c->name, $players->topByHonor(10)));
+        self::assertSame(['NormalDefault', 'Iopette', 'Cra'], array_map(static fn (\StarLoco\Web\Model\Character $c): string => $c->name, $players->podium(10)));
+        self::assertSame(4, count($players->byAccount($account)));
+        self::assertSame(['NormalDefault', 'Cra'], array_map(static fn (\StarLoco\Web\Model\Character $c): string => $c->name, $players->wanted()));
+        self::assertTrue($players->wanted()[1]->online);
         self::assertSame(1, $players->countOnline(601));
 
         // Job 2 must not match job 24 ("CONCAT(';', jobs) LIKE '%;2,%'").
-        self::assertSame(['Iopette' => [24 => 140, 2 => 50], 'Cra' => [2 => 999]], $players->jobsOfCharactersWithJob(2));
+        self::assertSame(['NormalDefault' => [2 => 200], 'Iopette' => [24 => 140, 2 => 50], 'Cra' => [2 => 999]], $players->jobsOfCharactersWithJob(2));
         self::assertSame(['Iopette'], array_keys($players->jobsOfCharactersWithJob(24)));
     }
 

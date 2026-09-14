@@ -8,11 +8,11 @@ use StarLoco\Web\Database;
 use StarLoco\Web\Model\Character;
 
 /**
- * starloco_login.world_players (characters). Rankings only include normal players (groupe = -1).
+ * starloco_login.world_players (characters). Normal players use groupe = 0 by default or -1 after a group reset.
  */
 final readonly class PlayerRepository
 {
-    private const string NORMAL_PLAYERS = 'groupe = -1';
+    private const string NORMAL_PLAYERS = 'groupe IN (-1, 0)';
 
     public function __construct(private Database $database)
     {
@@ -63,7 +63,7 @@ final readonly class PlayerRepository
      */
     public function jobsOfCharactersWithJob(int $jobId): array
     {
-        $query = $this->database->login()->prepare("SELECT name, jobs FROM world_players WHERE CONCAT(';', jobs) LIKE ?");
+        $query = $this->database->login()->prepare('SELECT name, jobs FROM world_players WHERE ' . self::NORMAL_PLAYERS . " AND CONCAT(';', jobs) LIKE ?");
         $query->execute(['%;' . $jobId . ',%']);
 
         $result = [];
