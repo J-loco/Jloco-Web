@@ -1,7 +1,7 @@
 {% set account = current_account() %}
 {% set route = current_route ?? '' %}
 {% set nav = [
-    {route: 'home', label: 'Accueil', active: route == 'home'},
+    {route: 'home', label: 'Actualités', active: route == 'home'},
     {route: 'ladder', label: 'Classements', active: route starts with 'ladder'},
     {route: 'drops', label: 'Drops', active: route == 'drops'},
     {route: 'shop', label: 'Boutique', active: route starts with 'shop', auth: true},
@@ -9,14 +9,15 @@
     {route: 'join', label: 'Nous rejoindre', active: route == 'join'},
 ] %}
 
-<header class="sticky top-0 z-40 border-b border-stone-200 bg-white/90 backdrop-blur dark:border-stone-800 dark:bg-stone-900/90">
+<header class="site-header sticky top-0 z-40">
     <div class="container-page flex h-16 items-center gap-4">
-        <a href="{{ url('home') }}" class="flex shrink-0 items-center gap-2.5 font-semibold text-stone-900 dark:text-white">
-            <span class="grid size-8 place-items-center rounded-lg bg-brand-600 text-sm font-bold text-white dark:bg-brand-500 dark:text-stone-950" aria-hidden="true">{{ config.siteName|first|upper }}</span>
-            <span class="font-display text-2xl leading-none tracking-wide">{{ config.siteName }}</span>
+        <a href="{{ url('home') }}" class="brand-lockup" aria-label="{{ config.siteName }}, accueil">
+            <span class="brand-mark" aria-hidden="true"><i></i></span>
+            <span class="brand-name">STAR<span>LOCO</span></span>
+            <span class="brand-edition">RETRO</span>
         </a>
 
-        <nav class="hidden items-center gap-1 lg:flex" aria-label="Navigation principale">
+        <nav class="hidden h-full items-stretch lg:flex" aria-label="Navigation principale">
             {% for item in nav %}
                 {% if not item.auth|default(false) or account %}
                     <a class="nav-link" href="{{ url(item.route) }}" {% if item.active %}aria-current="page"{% endif %}>{{ item.label }}</a>
@@ -28,30 +29,6 @@
         </nav>
 
         <div class="ml-auto flex items-center gap-1.5">
-            {# Appearance: light/dark theme and the background patterns of the original theme (saved per browser). #}
-            {% set patterns = {'agsquare': 'agsquare.png', 'brickwall': 'brickwall.png', 'crossword': 'crossword.png', 'dark_circles': 'dark_circles.png', 'dark_geometric': 'dark_geometric.png', 'furley': 'furley.jpg', 'gray_jean': 'gray_jean.png', 'mirrored_squares': 'mirrored_squares.png', 'notebook': 'notebook.png', 'padded': 'padded.png', 'retina_wood': 'retina_wood.png', 'shattered': 'shattered.png', 'tileable_wood_texture': 'tileable_wood_texture.png', 'tiny_grid': 'tiny_grid.png', 'triangles': 'triangles.png'} %}
-            <details class="relative" data-menu>
-                <summary class="btn btn-ghost list-none px-2.5 [&::-webkit-details-marker]:hidden" aria-label="Apparence">
-                    <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4.098 19.902a3.75 3.75 0 0 0 5.304 0l6.401-6.402M6.75 21A3.75 3.75 0 0 1 3 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 0 0 3.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072M10.5 8.197l2.88-2.88c.438-.439 1.15-.439 1.59 0l3.712 3.713c.44.44.44 1.152 0 1.59l-2.879 2.88M6.75 17.25h.008v.008H6.75v-.008Z"/></svg>
-                </summary>
-                <div class="card absolute right-0 mt-2 w-64 space-y-3 p-3 text-sm">
-                    <button type="button" class="btn btn-secondary w-full" data-theme-toggle>
-                        <span class="dark:hidden">Passer en thème sombre</span><span class="hidden dark:inline">Passer en thème clair</span>
-                    </button>
-                    <div>
-                        <p class="mb-2 text-xs font-medium text-stone-500 dark:text-stone-400">Arrière-plan</p>
-                        <div class="grid grid-cols-6 gap-1.5">
-                            <button type="button" class="size-8 cursor-pointer rounded-md border border-stone-300 text-[10px] text-stone-500 dark:border-stone-700" data-bg="default" title="Par défaut">Auto</button>
-                            <button type="button" class="size-8 cursor-pointer rounded-md border border-stone-300 bg-stone-100 text-xs text-stone-500 dark:border-stone-700 dark:bg-stone-800" data-bg="none" title="Aucun">∅</button>
-                            {% for name, file in patterns %}
-                                <button type="button" class="size-8 cursor-pointer rounded-md border border-stone-300 bg-cover dark:border-stone-700" data-bg="{{ name }}" title="{{ name|replace({'_': ' '})|capitalize }}"
-                                        style="background-image: url('{{ asset('assets/img/bg/' ~ file) }}')"></button>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-            </details>
-
             {% if account %}
                 <details class="relative" data-menu>
                     <summary class="btn btn-secondary list-none [&::-webkit-details-marker]:hidden">
@@ -59,37 +36,34 @@
                         <span class="badge badge-brand tabular-nums" title="Points boutique">{{ account.points }} pts</span>
                     </summary>
                     <div class="card absolute right-0 mt-2 w-52 p-1.5 text-sm">
-                        <a class="block rounded-md px-3 py-2 hover:bg-stone-100 dark:hover:bg-stone-800" href="{{ url('account') }}">Mon compte</a>
-                        <a class="block rounded-md px-3 py-2 hover:bg-stone-100 dark:hover:bg-stone-800" href="{{ url('shop') }}">Boutique</a>
-                        {% if is_admin() %}
-                            <a class="block rounded-md px-3 py-2 hover:bg-stone-100 dark:hover:bg-stone-800" href="{{ url('admin') }}">Administration</a>
-                        {% endif %}
-                        <form method="post" action="{{ url('logout') }}" class="mt-1 border-t border-stone-200 pt-1 dark:border-stone-800">
+                        <a class="menu-link" href="{{ url('account') }}">Mon compte</a>
+                        <a class="menu-link" href="{{ url('shop') }}">Boutique</a>
+                        {% if is_admin() %}<a class="menu-link" href="{{ url('admin') }}">Administration</a>{% endif %}
+                        <form method="post" action="{{ url('logout') }}" class="mt-1 border-t border-stone-800 pt-1">
                             {{ csrf_field() }}
-                            <button type="submit" class="block w-full cursor-pointer rounded-md px-3 py-2 text-left text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10">Déconnexion</button>
+                            <button type="submit" class="menu-link menu-link-danger w-full text-left">Déconnexion</button>
                         </form>
                     </div>
                 </details>
             {% else %}
                 <a class="btn btn-ghost hidden sm:inline-flex" href="{{ url('login') }}" data-dialog-open="login-dialog">Connexion</a>
-                <a class="btn btn-primary" href="{{ url('register') }}">Inscription</a>
+                <a class="btn btn-primary hidden sm:inline-flex" href="{{ url('register') }}">Créer un compte</a>
             {% endif %}
 
-            <details class="relative lg:hidden" data-menu>
-                <summary class="btn btn-ghost list-none px-2.5 [&::-webkit-details-marker]:hidden" aria-label="Menu">
-                    <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+            <details class="mobile-nav relative" data-menu>
+                <summary class="mobile-nav-button list-none [&::-webkit-details-marker]:hidden" aria-label="Menu">
+                    <span aria-hidden="true">☰</span>
                 </summary>
                 <nav class="card absolute right-0 mt-2 w-56 p-1.5 text-sm" aria-label="Navigation mobile">
                     {% for item in nav %}
                         {% if not item.auth|default(false) or account %}
-                            <a class="block rounded-md px-3 py-2 hover:bg-stone-100 dark:hover:bg-stone-800 {{ item.active ? 'font-semibold text-brand-700 dark:text-brand-300' }}" href="{{ url(item.route) }}" {% if item.active %}aria-current="page"{% endif %}>{{ item.label }}</a>
+                            <a class="menu-link {{ item.active ? 'active' }}" href="{{ url(item.route) }}" {% if item.active %}aria-current="page"{% endif %}>{{ item.label }}</a>
                         {% endif %}
                     {% endfor %}
-                    {% if config.forumUrl %}
-                        <a class="block rounded-md px-3 py-2 hover:bg-stone-100 dark:hover:bg-stone-800" href="{{ config.forumUrl }}" rel="noopener">Forum</a>
-                    {% endif %}
+                    {% if config.forumUrl %}<a class="menu-link" href="{{ config.forumUrl }}" rel="noopener">Forum</a>{% endif %}
                     {% if not account %}
-                        <a class="block rounded-md px-3 py-2 hover:bg-stone-100 sm:hidden dark:hover:bg-stone-800" href="{{ url('login') }}">Connexion</a>
+                        <a class="menu-link sm:hidden" href="{{ url('login') }}">Connexion</a>
+                        <a class="menu-link sm:hidden" href="{{ url('register') }}">Créer un compte</a>
                     {% endif %}
                 </nav>
             </details>

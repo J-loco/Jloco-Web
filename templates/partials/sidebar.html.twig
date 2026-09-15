@@ -1,11 +1,20 @@
 {% import 'components/ui.html.twig' as ui %}
 {% set data = sidebar() %}
 
-<section class="card" aria-labelledby="sidebar-status">
-    <div class="card-header"><h2 id="sidebar-status" class="card-title">État des serveurs</h2></div>
-    <ul class="divide-y divide-stone-100 text-sm dark:divide-stone-800">
+<section class="card server-panel" aria-labelledby="sidebar-status">
+    <div class="card-header">
+        <div><p class="section-kicker">ÉTAT DU ROYAUME</p><h2 id="sidebar-status" class="card-title">Serveur {{ data.game.name }}</h2></div>
+        <span class="live-badge {{ data.game.online ? '' : 'offline' }}">{{ data.game.online ? 'LIVE' : 'HORS LIGNE' }}</span>
+    </div>
+    <div class="players-spotlight">
+        <div>
+            <strong>{{ data.game.online ? data.game.players : '–' }}</strong>
+            <span>aventurier{{ data.game.players > 1 ? 's' }} en ligne</span>
+        </div>
+        <img src="{{ asset('assets/img/launcher/pet.png') }}" alt="" width="96" height="95">
+    </div>
+    <ul class="server-list divide-y divide-stone-100 text-sm dark:divide-stone-800">
         <li class="flex items-center gap-3 px-5 py-3">
-            <img class="size-10 shrink-0 rounded-lg" src="{{ asset('assets/img/servers/login.jpg') }}" alt="" width="40" height="40">
             <div class="flex-1">
                 <p class="font-medium text-stone-900 dark:text-stone-100">Connexion</p>
                 <p class="text-xs text-stone-500 dark:text-stone-400">{{ data.loginOnline ? 'En ligne' : 'Hors ligne' }}</p>
@@ -13,12 +22,11 @@
             {{ ui.status_dot(data.loginOnline) }}
         </li>
         <li class="flex items-center gap-3 px-5 py-3">
-            <img class="size-10 shrink-0 rounded-lg" src="{{ asset('assets/img/servers/jiva.jpg') }}" alt="" width="40" height="40">
             <div class="flex-1">
                 <p class="font-medium text-stone-900 dark:text-stone-100">{{ data.game.name }}</p>
                 <p class="text-xs text-stone-500 dark:text-stone-400">
                     {% if data.game.online %}
-                        <span class="tabular-nums">{{ data.game.players }}</span> connecté{{ data.game.players > 1 ? 's' }}{% if data.game.uptime %} · depuis {{ data.game.uptime }}{% endif %}
+                        En ligne{% if data.game.uptime %} · depuis {{ data.game.uptime }}{% endif %}
                     {% else %}
                         Hors ligne
                     {% endif %}
@@ -36,9 +44,9 @@
 
 <section class="card" aria-labelledby="sidebar-stats">
     <div class="card-header"><h2 id="sidebar-stats" class="card-title">Statistiques</h2></div>
-    <dl class="grid grid-cols-2 gap-px overflow-hidden rounded-b-xl bg-stone-100 text-center dark:bg-stone-800">
+    <dl class="grid grid-cols-2 gap-px overflow-hidden rounded-b-xl bg-white/5 text-center">
         {% for label, value in {'Comptes': data.stats.accounts, 'Personnages': data.stats.characters, 'Guildes': data.stats.guilds, 'Objets': data.stats.objects} %}
-            <div class="bg-white px-3 py-3 dark:bg-stone-900">
+            <div class="bg-[#1a2019] px-3 py-3">
                 <dt class="text-xs text-stone-500 dark:text-stone-400">{{ label }}</dt>
                 <dd class="text-lg font-semibold text-stone-900 tabular-nums dark:text-stone-100">{{ value|number_format(0, ',', ' ') }}</dd>
             </div>

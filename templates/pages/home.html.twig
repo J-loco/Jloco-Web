@@ -3,8 +3,31 @@
 
 {% block title %}{% if page > 1 %}Actualités, page {{ page }}{% endif %}{% endblock %}
 
+{% block hero %}
+    <section class="launcher-hero" aria-labelledby="home-hero-title">
+        <img class="launcher-hero-art" src="{{ asset('assets/img/launcher/hero-jungle.png') }}" alt="" width="742" height="556">
+        <div class="launcher-hero-shade" aria-hidden="true"></div>
+        <div class="launcher-hero-copy">
+            <p class="section-kicker">DOFUS 1.39 <span aria-hidden="true"></span> SERVEUR FRANÇAIS</p>
+            <h1 id="home-hero-title">Reprenez votre<br>aventure rétro.</h1>
+            <p>Un monde fidèle, vivant et façonné par sa communauté.</p>
+            <div class="flex flex-wrap gap-2.5">
+                <a class="btn btn-primary" href="{{ current_account() ? url('join') : url('register') }}">{{ current_account() ? 'Jouer maintenant' : 'Créer un compte' }}</a>
+                <a class="btn btn-secondary" href="{{ url('join') }}">Télécharger le launcher</a>
+            </div>
+        </div>
+        <div class="launcher-hero-signature" aria-hidden="true"><span>LE MONDE</span><strong>DES DOUZE</strong></div>
+    </section>
+{% endblock %}
+
 {% block content %}
-    {{ ui.page_header('Actualités', 'Les dernières nouvelles du serveur, de la plus récente à la plus ancienne.') }}
+    <header class="section-heading">
+        <div>
+            <p class="section-kicker">JOURNAL DE BORD</p>
+            <h1>Les dernières nouvelles</h1>
+        </div>
+        <span aria-hidden="true"></span>
+    </header>
 
     {% for item in news %}
         <article class="card overflow-hidden">

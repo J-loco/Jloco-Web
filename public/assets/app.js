@@ -26,22 +26,6 @@
     // A click on the backdrop lands on the <dialog> itself (its content has its own wrapper).
     if (target instanceof HTMLDialogElement) target.close();
 
-    if (target.closest('[data-theme-toggle]')) {
-      const dark = document.documentElement.classList.toggle('dark');
-      try { localStorage.setItem('theme', dark ? 'dark' : 'light'); } catch { /* private mode */ }
-    }
-
-    const pattern = target.closest('[data-bg]');
-    if (pattern) {
-      const value = pattern.getAttribute('data-bg');
-      if (value === 'default') delete document.documentElement.dataset.bg;
-      else document.documentElement.dataset.bg = value;
-      try {
-        if (value === 'default') localStorage.removeItem('background');
-        else localStorage.setItem('background', value);
-      } catch { /* private mode */ }
-    }
-
     if (target.closest('[data-dismiss]')) target.closest('[data-dismissible]')?.remove();
 
     const refresh = target.closest('[data-captcha-refresh]');
