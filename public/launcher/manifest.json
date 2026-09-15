@@ -1,6 +1,6 @@
 {
- "version": "2026.09.13-1745",
- "generatedAt": "2026-09-13T15:45:06.234Z",
+ "version": "2026.09.15-1209",
+ "generatedAt": "2026-09-15T10:10:14.497Z",
  "filesPath": "files",
  "files": {
   ".release.infos.json": {
@@ -309,7 +309,7 @@
   },
   "resources/app/package.json": {
    "size": 846,
-   "sha1": "f35078d649171b6961b10ceb12ce4bf6e388db35"
+   "sha1": "56bec8a49be500f26952e183fed009dfeaa30400"
   },
   "resources/app/pepperflash/pepflashplayer.dll": {
    "size": 31265280,
