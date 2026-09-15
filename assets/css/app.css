@@ -1,6 +1,6 @@
 /*
- * StarLoco-Web styles. Built with the Tailwind CSS standalone CLI into public/assets/app.css:
- *   docker compose run --rm starloco_web_assets          (from StarLoco-Game/)
+ * JLoco-Web styles. Built with the Tailwind CSS standalone CLI into public/assets/app.css:
+ *   docker compose run --rm jloco_web_assets          (from JLoco-Game/)
  * Design tokens live in @theme; reusable pieces in @layer components.
  */
 @import "tailwindcss";
@@ -172,7 +172,7 @@
 }
 
 @theme {
-  /* Heading font of the original StarLoco theme. */
+  /* Heading font of the original JLoco theme. */
   --font-display: "Bahnschrift SemiCondensed", "Bahnschrift", "Arial Narrow", "Bebas Neue", ui-sans-serif, system-ui, sans-serif;
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 

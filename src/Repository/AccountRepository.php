@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Repository;
+namespace JLoco\Web\Repository;
 
-use StarLoco\Web\Database;
-use StarLoco\Web\Model\Account;
-use StarLoco\Web\Model\Credentials;
-use StarLoco\Web\Model\Voter;
-use StarLoco\Web\Support\Text;
+use JLoco\Web\Database;
+use JLoco\Web\Model\Account;
+use JLoco\Web\Model\Credentials;
+use JLoco\Web\Model\Voter;
+use JLoco\Web\Support\Text;
 
 /**
- * starloco_login.world_accounts (shared with StarLoco-Login and StarLoco-Game).
+ * jloco_login.world_accounts (shared with JLoco-Login and JLoco-Game).
  *
  * Its text columns are latin1: a lookup value latin1 cannot represent cannot match, and comparing
  * it would raise a collation error, so such lookups return "not found" without querying.

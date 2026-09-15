@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web;
+namespace JLoco\Web;
 
-use StarLoco\Web\Security\PasswordHasher;
+use JLoco\Web\Security\PasswordHasher;
 
 /**
  * Typed application settings, read once from the environment.
  *
- * Precedence: real environment variables (docker compose) > StarLoco-Web/.env (phpdotenv) > defaults.
+ * Precedence: real environment variables (docker compose) > JLoco-Web/.env (phpdotenv) > defaults.
  * Every variable is documented in .env.example.
  */
 final readonly class Config
@@ -50,20 +50,20 @@ final readonly class Config
 
     public static function fromEnvironment(): self
     {
-        $gameDbName = self::string('GAME_DB_NAME', 'starloco_game');
+        $gameDbName = self::string('GAME_DB_NAME', 'jloco_game');
 
         return new self(
             appUrl: rtrim(self::string('APP_URL', 'http://127.0.0.1/dofus/'), '/') . '/',
             debug: self::bool('APP_DEBUG'),
             trustCloudflare: self::bool('TRUST_CLOUDFLARE'),
-            siteName: self::string('SITE_NAME', 'StarLoco'),
+            siteName: self::string('SITE_NAME', 'JLoco'),
             adminAccountId: self::int('ADMIN_ACCOUNT_ID', 1),
             dbHost: self::string('DB_HOST', '127.0.0.1'),
             dbPort: self::int('DB_PORT', 3306),
-            // "root" keeps installs that predate the starloco_web user working.
+            // "root" keeps installs that predate the jloco_web user working.
             dbUser: self::string('DB_USER', 'root'),
             dbPass: self::string('DB_PASS', ''),
-            loginDbName: self::string('LOGIN_DB_NAME', 'starloco_login'),
+            loginDbName: self::string('LOGIN_DB_NAME', 'jloco_login'),
             gameDbName: $gameDbName,
             loginServerHost: self::string('LOGIN_HOST', '127.0.0.1'),
             loginServerPort: self::int('LOGIN_PORT', 450),
@@ -103,7 +103,7 @@ final readonly class Config
     }
 
     /**
-     * "1:starloco_game,2:starloco_game_2" => [1 => 'starloco_game', 2 => 'starloco_game_2'].
+     * "1:jloco_game,2:jloco_game_2" => [1 => 'jloco_game', 2 => 'jloco_game_2'].
      *
      * @return array<int, string>
      */

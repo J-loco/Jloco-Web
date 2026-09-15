@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Http;
+namespace JLoco\Web\Http;
 
 final readonly class Route
 {

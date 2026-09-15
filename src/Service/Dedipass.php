@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Service;
+namespace JLoco\Web\Service;
 
-use StarLoco\Web\Config;
-use StarLoco\Web\Model\Account;
-use StarLoco\Web\Repository\AccountRepository;
-use StarLoco\Web\Repository\ShopRepository;
+use JLoco\Web\Config;
+use JLoco\Web\Model\Account;
+use JLoco\Web\Repository\AccountRepository;
+use JLoco\Web\Repository\ShopRepository;
 
 /**
  * Buying shop points with Dedipass codes. The Dedipass widget posts "code" and "rate" to the

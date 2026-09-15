@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Game;
+namespace JLoco\Web\Game;
 
 /**
  * Human-readable item effects from website_shop_objects_templates.effects

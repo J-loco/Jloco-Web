@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Security;
+namespace JLoco\Web\Security;
 
-use StarLoco\Web\Config;
-use StarLoco\Web\Database;
-use StarLoco\Web\Http\Request;
+use JLoco\Web\Config;
+use JLoco\Web\Database;
+use JLoco\Web\Http\Request;
 
 /**
  * Brute-force protection: at most MAX_FAILURES failed attempts per (IP, action) per window.

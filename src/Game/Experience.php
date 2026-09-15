@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Game;
+namespace JLoco\Web\Game;
 
 /**
- * XP thresholds, mirrored from StarLoco-Game/scripts/data/Experience.lua
+ * XP thresholds, mirrored from JLoco-Game/scripts/data/Experience.lua
  * (the `experience` SQL table was dropped by game migration 05, XP now lives in Lua).
  * Index i holds the total XP required to reach level i + 1.
  */

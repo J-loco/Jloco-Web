@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Model;
+namespace JLoco\Web\Model;
 
 use DateTimeImmutable;
 

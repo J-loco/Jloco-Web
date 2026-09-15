@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Controller;
+namespace JLoco\Web\Controller;
 
-use StarLoco\Web\Container;
-use StarLoco\Web\Http\Response;
-use StarLoco\Web\Http\Router;
-use StarLoco\Web\Security\Session;
-use StarLoco\Web\Service\AuthService;
-use StarLoco\Web\View\View;
+use JLoco\Web\Container;
+use JLoco\Web\Http\Response;
+use JLoco\Web\Http\Router;
+use JLoco\Web\Security\Session;
+use JLoco\Web\Service\AuthService;
+use JLoco\Web\View\View;
 
 /**
  * Helpers shared by controllers. Actions receive (Request $request, array<string, string> $params)

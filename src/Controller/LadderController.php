@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Controller;
+namespace JLoco\Web\Controller;
 
-use StarLoco\Web\Http\Request;
-use StarLoco\Web\Http\Response;
-use StarLoco\Web\Repository\AccountRepository;
-use StarLoco\Web\Repository\GameRepository;
-use StarLoco\Web\Repository\GuildRepository;
-use StarLoco\Web\Repository\PlayerRepository;
-use StarLoco\Web\Service\JobLadder;
+use JLoco\Web\Http\Request;
+use JLoco\Web\Http\Response;
+use JLoco\Web\Repository\AccountRepository;
+use JLoco\Web\Repository\GameRepository;
+use JLoco\Web\Repository\GuildRepository;
+use JLoco\Web\Repository\PlayerRepository;
+use JLoco\Web\Service\JobLadder;
 
 /** Rankings: one URL per tab, no JavaScript needed. */
 final class LadderController extends AbstractController

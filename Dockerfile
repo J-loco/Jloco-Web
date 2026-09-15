@@ -1,24 +1,24 @@
-# StarLoco-Web image (PHP 8.4).
+# JLoco-Web image (PHP 8.4).
 #
 #   runtime     PHP 8.4 + Apache + Composer dependencies; code bind-mounted (docker compose, development)
-#   tailwind    Tailwind CSS standalone CLI, builds public/assets/app.css (starloco_web_assets service)
+#   tailwind    Tailwind CSS standalone CLI, builds public/assets/app.css (jloco_web_assets service)
 #   production  runtime + code + built CSS, self-contained
-#   sprites     JPEXS FFDec + ImageMagick: exports shop item images from the client (starloco_web_sprites)
-#   dev         runtime + Composer + dev dependencies (tests, PHPStan, php-cs-fixer, Rector): starloco_web_tools
+#   sprites     JPEXS FFDec + ImageMagick: exports shop item images from the client (jloco_web_sprites)
+#   dev         runtime + Composer + dev dependencies (tests, PHPStan, php-cs-fixer, Rector): jloco_web_tools
 #
-# Dependencies live in /opt/starloco-web/vendor, outside the code directory, so a bind mount never hides them.
+# Dependencies live in /opt/jloco-web/vendor, outside the code directory, so a bind mount never hides them.
 
 ARG TAILWIND_VERSION=4.3.3
 
 FROM composer:2 AS vendor
-WORKDIR /opt/starloco-web
+WORKDIR /opt/jloco-web
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-interaction --no-progress --prefer-dist --no-autoloader \
         --ignore-platform-req=ext-gd --ignore-platform-req=ext-intl --ignore-platform-req=ext-pdo_mysql \
     && composer dump-autoload --no-dev --optimize
 
 FROM composer:2 AS vendor-dev
-WORKDIR /opt/starloco-web
+WORKDIR /opt/jloco-web
 COPY composer.json composer.lock ./
 RUN composer install --no-interaction --no-progress --prefer-dist --no-autoloader --no-scripts \
         --ignore-platform-req=ext-gd --ignore-platform-req=ext-intl --ignore-platform-req=ext-pdo_mysql \
@@ -63,24 +63,24 @@ RUN apt-get update \
     && docker-php-ext-install -j"$(nproc)" gd intl opcache pdo_mysql \
     && rm -rf /var/lib/apt/lists/*
 RUN a2enmod rewrite headers
-COPY docker/php.ini /usr/local/etc/php/conf.d/zz-starloco.ini
-COPY docker/apache.conf /etc/apache2/conf-available/starloco.conf
-RUN a2enconf starloco
-COPY --from=vendor /opt/starloco-web/vendor /opt/starloco-web/vendor
-ENV STARLOCO_VENDOR_DIR=/opt/starloco-web/vendor \
+COPY docker/php.ini /usr/local/etc/php/conf.d/zz-jloco.ini
+COPY docker/apache.conf /etc/apache2/conf-available/jloco.conf
+RUN a2enconf jloco
+COPY --from=vendor /opt/jloco-web/vendor /opt/jloco-web/vendor
+ENV JLOCO_VENDOR_DIR=/opt/jloco-web/vendor \
     APP_BASE_PATH=/dofus
-WORKDIR /var/www/starloco-web
+WORKDIR /var/www/jloco-web
 
 FROM runtime AS production
-COPY docker/php-production.ini /usr/local/etc/php/conf.d/zzz-starloco-production.ini
-COPY . /var/www/starloco-web
-COPY --from=assets /app/public/assets/app.css /var/www/starloco-web/public/assets/app.css
+COPY docker/php-production.ini /usr/local/etc/php/conf.d/zzz-jloco-production.ini
+COPY . /var/www/jloco-web
+COPY --from=assets /app/public/assets/app.css /var/www/jloco-web/public/assets/app.css
 
 FROM runtime AS dev
 RUN apt-get update && apt-get install -y --no-install-recommends git unzip && rm -rf /var/lib/apt/lists/*
 COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
-COPY --from=vendor-dev /opt/starloco-web/vendor /opt/starloco-web/vendor
-ENV COMPOSER_VENDOR_DIR=/opt/starloco-web/vendor \
-    PATH="/opt/starloco-web/vendor/bin:${PATH}"
+COPY --from=vendor-dev /opt/jloco-web/vendor /opt/jloco-web/vendor
+ENV COMPOSER_VENDOR_DIR=/opt/jloco-web/vendor \
+    PATH="/opt/jloco-web/vendor/bin:${PATH}"
 ENTRYPOINT ["composer"]
 CMD ["check"]

@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Tests\Unit\Service;
+namespace JLoco\Web\Tests\Unit\Service;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
-use StarLoco\Web\Config;
-use StarLoco\Web\Controller\DropController;
-use StarLoco\Web\Migration\Migrator;
-use StarLoco\Web\Model\Account;
-use StarLoco\Web\Model\Drop;
-use StarLoco\Web\Model\MapPosition;
-use StarLoco\Web\Service\AuthService;
-use StarLoco\Web\Service\ForumFeed;
-use StarLoco\Web\Service\JobLadder;
-use StarLoco\Web\Service\ServerStatus;
-use StarLoco\Web\View\AppExtension;
+use JLoco\Web\Config;
+use JLoco\Web\Controller\DropController;
+use JLoco\Web\Migration\Migrator;
+use JLoco\Web\Model\Account;
+use JLoco\Web\Model\Drop;
+use JLoco\Web\Model\MapPosition;
+use JLoco\Web\Service\AuthService;
+use JLoco\Web\Service\ForumFeed;
+use JLoco\Web\Service\JobLadder;
+use JLoco\Web\Service\ServerStatus;
+use JLoco\Web\View\AppExtension;
 
 /** Pure logic of services, models and helpers (no database). */
 final class DomainLogicTest extends TestCase
@@ -35,7 +35,7 @@ final class DomainLogicTest extends TestCase
             10,
         );
 
-        self::assertSame(['Bob', 'Carol', 'Alice'], array_map(static fn (\StarLoco\Web\Model\JobRanking $r): string => $r->name, $ranking));
+        self::assertSame(['Bob', 'Carol', 'Alice'], array_map(static fn (\JLoco\Web\Model\JobRanking $r): string => $r->name, $ranking));
         self::assertSame(3, $ranking[0]->level);
         self::assertSame(['Alchimiste'], $ranking[2]->otherJobs);
         self::assertCount(1, JobLadder::rank(['Alice' => [24 => 1], 'Bob' => [24 => 2]], 24, [], 1), 'limit');
@@ -50,12 +50,12 @@ final class DomainLogicTest extends TestCase
         ];
 
         $byMonster = DropController::group($drops, 'monster');
-        self::assertSame(['Bouftou', 'Boufton'], array_map(static fn (\StarLoco\Web\Model\DropGroup $g): string => $g->name, $byMonster));
-        self::assertSame(['Laine', 'Cuir'], array_map(static fn (\StarLoco\Web\Model\DropLine $l): string => $l->name, $byMonster[0]->lines));
+        self::assertSame(['Bouftou', 'Boufton'], array_map(static fn (\JLoco\Web\Model\DropGroup $g): string => $g->name, $byMonster));
+        self::assertSame(['Laine', 'Cuir'], array_map(static fn (\JLoco\Web\Model\DropLine $l): string => $l->name, $byMonster[0]->lines));
 
         $byItem = DropController::group($drops, 'item');
-        self::assertSame(['Laine', 'Cuir'], array_map(static fn (\StarLoco\Web\Model\DropGroup $g): string => $g->name, $byItem));
-        self::assertSame(['Bouftou', 'Boufton'], array_map(static fn (\StarLoco\Web\Model\DropLine $l): string => $l->name, $byItem[0]->lines));
+        self::assertSame(['Laine', 'Cuir'], array_map(static fn (\JLoco\Web\Model\DropGroup $g): string => $g->name, $byItem));
+        self::assertSame(['Bouftou', 'Boufton'], array_map(static fn (\JLoco\Web\Model\DropLine $l): string => $l->name, $byItem[0]->lines));
     }
 
     public function testPasswordAndAccountNameRulesMatchTheLoginServer(): void
@@ -85,7 +85,7 @@ final class DomainLogicTest extends TestCase
 
     public function testShopServersSetting(): void
     {
-        self::assertSame([1 => 'starloco_game', 2 => 'game_2'], Config::parseShopServers('1:starloco_game, 2:game_2'));
+        self::assertSame([1 => 'jloco_game', 2 => 'game_2'], Config::parseShopServers('1:jloco_game, 2:game_2'));
         self::assertSame([], Config::parseShopServers('x:game,3:bad-name;,'));
     }
 

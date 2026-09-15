@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Model;
+namespace JLoco\Web\Model;
 
 /** World coordinates of a map (maps.mappos "x,y,subAreaId"). */
 final readonly class MapPosition

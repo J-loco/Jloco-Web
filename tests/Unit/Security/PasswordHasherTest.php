@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Tests\Unit\Security;
+namespace JLoco\Web\Tests\Unit\Security;
 
 use PHPUnit\Framework\TestCase;
-use StarLoco\Web\Security\PasswordHasher;
-use StarLoco\Web\Tests\Support\TestConfig;
+use JLoco\Web\Security\PasswordHasher;
+use JLoco\Web\Tests\Support\TestConfig;
 
 /**
- * The vectors below are shared with StarLoco-Login (PasswordTest): site and game server must agree.
+ * The vectors below are shared with JLoco-Login (PasswordTest): site and game server must agree.
  */
 final class PasswordHasherTest extends TestCase
 {

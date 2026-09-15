@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Service;
+namespace JLoco\Web\Service;
 
-use StarLoco\Web\Database;
-use StarLoco\Web\Http\Router;
-use StarLoco\Web\Repository\AccountRepository;
-use StarLoco\Web\Security\PasswordHasher;
-use StarLoco\Web\Security\Throttle;
+use JLoco\Web\Database;
+use JLoco\Web\Http\Router;
+use JLoco\Web\Repository\AccountRepository;
+use JLoco\Web\Security\PasswordHasher;
+use JLoco\Web\Security\Throttle;
 use Throwable;
 
 /**
@@ -61,7 +61,7 @@ final readonly class PasswordResetService
                 'ttl' => self::TTL_MINUTES,
             ]);
         } catch (Throwable $e) {
-            error_log('StarLoco-Web: password reset email failed for account ' . $account->id . ': ' . $e->getMessage());
+            error_log('JLoco-Web: password reset email failed for account ' . $account->id . ': ' . $e->getMessage());
         }
         return true;
     }

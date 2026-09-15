@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Repository;
+namespace JLoco\Web\Repository;
 
-use StarLoco\Web\Database;
-use StarLoco\Web\Model\GameNews;
-use StarLoco\Web\Model\NewsPost;
+use JLoco\Web\Database;
+use JLoco\Web\Model\GameNews;
+use JLoco\Web\Model\NewsPost;
 
 /**
  * Website news (website_timeline_news, also served to the launcher) and in-game news
- * (client_rss_news, read by the Dofus client). Both live in starloco_login.
+ * (client_rss_news, read by the Dofus client). Both live in jloco_login.
  */
 final readonly class NewsRepository
 {

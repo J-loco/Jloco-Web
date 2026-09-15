@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Service;
+namespace JLoco\Web\Service;
 
-use StarLoco\Web\Config;
-use StarLoco\Web\Model\GameServerStatus;
-use StarLoco\Web\Repository\PlayerRepository;
-use StarLoco\Web\Repository\ServerRepository;
+use JLoco\Web\Config;
+use JLoco\Web\Model\GameServerStatus;
+use JLoco\Web\Repository\PlayerRepository;
+use JLoco\Web\Repository\ServerRepository;
 
 /**
  * Login/game server availability (TCP probe) and population, for the sidebar and the launcher.

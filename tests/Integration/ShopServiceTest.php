@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Tests\Integration;
+namespace JLoco\Web\Tests\Integration;
 
-use StarLoco\Web\Repository\ShopRepository;
-use StarLoco\Web\Service\ShopService;
+use JLoco\Web\Repository\ShopRepository;
+use JLoco\Web\Service\ShopService;
 
 final class ShopServiceTest extends IntegrationTestCase
 {
@@ -105,7 +105,7 @@ final class ShopServiceTest extends IntegrationTestCase
 
     public function testUnavailableGameDatabaseDoesNotDebitPoints(): void
     {
-        $service = $this->container(['shopServers' => [1 => 'starloco_database_that_does_not_exist']])->get(ShopService::class);
+        $service = $this->container(['shopServers' => [1 => 'jloco_database_that_does_not_exist']])->get(ShopService::class);
 
         $errorLog = ini_set('error_log', '/dev/null'); // the failure is logged on purpose
         try {

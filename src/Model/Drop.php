@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Model;
+namespace JLoco\Web\Model;
 
 /** One line of the drops table: a monster, an item it drops, and the rates from grade 1 to 5. */
 final readonly class Drop

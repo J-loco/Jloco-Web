@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Model;
+namespace JLoco\Web\Model;
 
 use DateTimeImmutable;
 
-/** A row of starloco_login.world_accounts, as the portal sees it (never the password). */
+/** A row of jloco_login.world_accounts, as the portal sees it (never the password). */
 final readonly class Account
 {
     public function __construct(

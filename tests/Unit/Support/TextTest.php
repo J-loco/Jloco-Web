@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Tests\Unit\Support;
+namespace JLoco\Web\Tests\Unit\Support;
 
 use PHPUnit\Framework\TestCase;
-use StarLoco\Web\Support\Text;
+use JLoco\Web\Support\Text;
 
 final class TextTest extends TestCase
 {

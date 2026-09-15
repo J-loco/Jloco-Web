@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Model;
+namespace JLoco\Web\Model;
 
-/** In-game news (starloco_login.client_rss_news), read by the Dofus client. */
+/** In-game news (jloco_login.client_rss_news), read by the Dofus client. */
 final readonly class GameNews
 {
     public function __construct(

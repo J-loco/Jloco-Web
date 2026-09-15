@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Repository;
+namespace JLoco\Web\Repository;
 
-use StarLoco\Web\Database;
-use StarLoco\Web\Model\ShopCategory;
-use StarLoco\Web\Model\ShopItem;
+use JLoco\Web\Database;
+use JLoco\Web\Model\ShopCategory;
+use JLoco\Web\Model\ShopItem;
 
 /**
- * Shop catalogue and purchase logs (starloco_login.website_shop_*).
+ * Shop catalogue and purchase logs (jloco_login.website_shop_*).
  *
  * website_shop_objects.server is a shop server key (see Config::$shopServers), not necessarily a
  * world_servers id; see docs/refactor/audit.md (D13).

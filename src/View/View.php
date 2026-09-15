@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\View;
+namespace JLoco\Web\View;
 
-use StarLoco\Web\Http\Response;
+use JLoco\Web\Http\Response;
 use Twig\Environment;
 
 final class View

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web;
+namespace JLoco\Web;
 
 use Closure;
 use ReflectionClass;

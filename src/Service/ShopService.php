@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Service;
+namespace JLoco\Web\Service;
 
 use PDOException;
-use StarLoco\Web\Config;
-use StarLoco\Web\Repository\AccountRepository;
-use StarLoco\Web\Repository\GameRepository;
-use StarLoco\Web\Repository\ShopRepository;
+use JLoco\Web\Config;
+use JLoco\Web\Repository\AccountRepository;
+use JLoco\Web\Repository\GameRepository;
+use JLoco\Web\Repository\ShopRepository;
 
 final readonly class ShopService
 {
@@ -73,11 +73,11 @@ final readonly class ShopService
         $deliveryTemplate = self::DELIVERY_TEMPLATES[$template] ?? $template;
         try {
             if (!$this->game->hasItemTemplate($gameDatabase, $deliveryTemplate)) {
-                error_log("StarLoco-Web: delivery template $deliveryTemplate for shop template $template is missing from game database $gameDatabase");
+                error_log("JLoco-Web: delivery template $deliveryTemplate for shop template $template is missing from game database $gameDatabase");
                 return 'Cet objet est temporairement indisponible.';
             }
         } catch (PDOException $e) {
-            error_log('StarLoco-Web: shop availability check failed: ' . $e->getMessage());
+            error_log('JLoco-Web: shop availability check failed: ' . $e->getMessage());
             return 'La boutique est temporairement indisponible.';
         }
 
@@ -89,7 +89,7 @@ final readonly class ShopService
             $this->game->addGift($gameDatabase, $accountId, $deliveryTemplate, 1, $item->maxStats);
         } catch (PDOException $e) {
             $this->accounts->addPoints($accountId, $item->price);
-            error_log('StarLoco-Web: gift delivery failed for account ' . $accountId . ': ' . $e->getMessage());
+            error_log('JLoco-Web: gift delivery failed for account ' . $accountId . ': ' . $e->getMessage());
             return 'Une erreur s\'est produite, tes points ont été remboursés.';
         }
 

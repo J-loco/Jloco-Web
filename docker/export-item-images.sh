@@ -2,8 +2,8 @@
 # Converts the client item sprites listed in var/item-sprites.tsv ("type<TAB>skin", written by
 # bin/item-sprites) to public/assets/img/items/<type>/<skin>.png.
 #
-#   /clips   StarLoco-Client/resources/app/retroclient/clips/items (read-only)
-#   /app     StarLoco-Web
+#   /clips   JLoco-Client/resources/app/retroclient/clips/items (read-only)
+#   /app     JLoco-Web
 #
 # Each SWF's first frame is rendered with JPEXS FFDec, trimmed to the item and capped at 96 px.
 # Existing PNGs are kept; pass --force to re-export everything.
@@ -15,7 +15,7 @@ OUT=/app/public/assets/img/items
 FORCE=${1:-}
 
 if [ ! -f "$LIST" ]; then
-    echo "Missing $LIST: run 'docker compose run --rm starloco_web_tools item-sprites' first." >&2
+    echo "Missing $LIST: run 'docker compose run --rm jloco_web_tools item-sprites' first." >&2
     exit 1
 fi
 

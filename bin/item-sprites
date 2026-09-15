@@ -3,15 +3,15 @@
 
 /**
  * Writes var/item-sprites.tsv: the "type<TAB>skin" of every item template sold in the shop.
- * The starloco_web_sprites service then converts those client sprites to PNG
+ * The jloco_web_sprites service then converts those client sprites to PNG
  * (docker/export-item-images.sh). Uses the portal database settings (DB_*).
  */
 
 declare(strict_types=1);
 
-use StarLoco\Web\Config;
-use StarLoco\Web\Database;
-use StarLoco\Web\Repository\ShopRepository;
+use JLoco\Web\Config;
+use JLoco\Web\Database;
+use JLoco\Web\Repository\ShopRepository;
 
 require __DIR__ . '/../config/autoload.php';
 

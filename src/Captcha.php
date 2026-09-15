@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web;
+namespace JLoco\Web;
 
-use StarLoco\Web\Security\Session;
+use JLoco\Web\Security\Session;
 
 /**
  * Image captcha for registration. The expected code lives in the session and is single use.

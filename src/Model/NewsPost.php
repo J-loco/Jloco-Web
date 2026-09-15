@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Model;
+namespace JLoco\Web\Model;
 
 use DateTimeImmutable;
 
-/** Website news (starloco_login.website_timeline_news), also served to the launcher. */
+/** Website news (jloco_login.website_timeline_news), also served to the launcher. */
 final readonly class NewsPost
 {
     public function __construct(

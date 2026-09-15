@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Support;
+namespace JLoco\Web\Support;
 
 /**
  * Text checks for the legacy schemas: most login-database columns are latin1, and game names are

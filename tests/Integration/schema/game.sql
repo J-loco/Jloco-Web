@@ -1,4 +1,4 @@
--- Schema of the starloco_game tables StarLoco-Web uses, dumped from the StarLoco-Game database
+-- Schema of the jloco_game tables JLoco-Web uses, dumped from the JLoco-Game database
 -- (mariadb-dump --no-data). Charsets are kept on purpose: the latin1 / utf8mb3 columns are part of what the tests check.
 CREATE TABLE `gifts` (
   `id` int(11) NOT NULL,

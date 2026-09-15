@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Repository;
+namespace JLoco\Web\Repository;
 
-use StarLoco\Web\Database;
-use StarLoco\Web\Model\Character;
+use JLoco\Web\Database;
+use JLoco\Web\Model\Character;
 
 /**
- * starloco_login.world_players (characters). Normal players use groupe = 0 by default or -1 after a group reset.
+ * jloco_login.world_players (characters). Normal players use groupe = 0 by default or -1 after a group reset.
  */
 final readonly class PlayerRepository
 {

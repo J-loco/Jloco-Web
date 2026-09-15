@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Service;
+namespace JLoco\Web\Service;
 
 use DateTimeImmutable;
 use DOMDocument;
-use StarLoco\Web\Config;
-use StarLoco\Web\Model\ForumTopic;
+use JLoco\Web\Config;
+use JLoco\Web\Model\ForumTopic;
 
 /**
  * Latest topics from the forum RSS feed (FORUM_RSS_URL). Feed content is untrusted: only plain
@@ -30,7 +30,7 @@ final readonly class ForumFeed
         if (!$this->isConfigured()) {
             return [];
         }
-        $context = stream_context_create(['http' => ['timeout' => 5, 'user_agent' => 'StarLoco-Web']]);
+        $context = stream_context_create(['http' => ['timeout' => 5, 'user_agent' => 'JLoco-Web']]);
         $xml = @file_get_contents($this->config->forumRssUrl, false, $context);
         return $xml === false ? [] : self::parse($xml, $limit);
     }

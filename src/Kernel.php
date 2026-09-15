@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web;
+namespace JLoco\Web;
 
 use FastRoute\Dispatcher;
-use StarLoco\Web\Http\LegacyUrls;
-use StarLoco\Web\Http\Request;
-use StarLoco\Web\Http\Response;
-use StarLoco\Web\Http\Router;
-use StarLoco\Web\Security\Csrf;
-use StarLoco\Web\Security\Session;
-use StarLoco\Web\Service\AuthService;
-use StarLoco\Web\View\View;
+use JLoco\Web\Http\LegacyUrls;
+use JLoco\Web\Http\Request;
+use JLoco\Web\Http\Response;
+use JLoco\Web\Http\Router;
+use JLoco\Web\Security\Csrf;
+use JLoco\Web\Security\Session;
+use JLoco\Web\Service\AuthService;
+use JLoco\Web\View\View;
 use Throwable;
 
 /**
@@ -34,7 +34,7 @@ final readonly class Kernel
         try {
             $response = $this->dispatch($request);
         } catch (Throwable $e) {
-            error_log('StarLoco-Web: ' . $e);
+            error_log('JLoco-Web: ' . $e);
             $response = $this->errorResponse($e);
         }
         return $this->withSecurityHeaders($response);

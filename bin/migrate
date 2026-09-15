@@ -4,7 +4,7 @@
 /**
  * Applies pending migrations/*.sql and provisions the portal's database user.
  *
- * Runs as the one-off "starloco_web_migrate" compose service (with admin credentials, which the
+ * Runs as the one-off "jloco_web_migrate" compose service (with admin credentials, which the
  * web container itself never gets), or by hand: php bin/migrate
  *
  * Environment:
@@ -16,10 +16,10 @@
 
 declare(strict_types=1);
 
-use StarLoco\Web\Config;
-use StarLoco\Web\Database;
-use StarLoco\Web\Migration\Migrator;
-use StarLoco\Web\Migration\WebUserProvisioner;
+use JLoco\Web\Config;
+use JLoco\Web\Database;
+use JLoco\Web\Migration\Migrator;
+use JLoco\Web\Migration\WebUserProvisioner;
 
 require __DIR__ . '/../config/autoload.php';
 
@@ -29,7 +29,7 @@ $log = static function (string $message): void {
 $config = Config::fromEnvironment();
 $database = new Database($config);
 
-// On a fresh volume MariaDB first runs StarLoco-Game/db-init (large dumps); wait for the base
+// On a fresh volume MariaDB first runs JLoco-Game/db-init (large dumps); wait for the base
 // tables the migrations build on instead of failing.
 $deadline = time() + (int) (getenv('MIGRATE_WAIT_SECONDS') ?: 300);
 while (true) {

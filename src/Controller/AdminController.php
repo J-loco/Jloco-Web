@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Controller;
+namespace JLoco\Web\Controller;
 
-use StarLoco\Web\Config;
-use StarLoco\Web\Http\Request;
-use StarLoco\Web\Http\Response;
-use StarLoco\Web\Model\Account;
-use StarLoco\Web\Repository\NewsRepository;
-use StarLoco\Web\Support\Text;
+use JLoco\Web\Config;
+use JLoco\Web\Http\Request;
+use JLoco\Web\Http\Response;
+use JLoco\Web\Model\Account;
+use JLoco\Web\Repository\NewsRepository;
+use JLoco\Web\Support\Text;
 
 final class AdminController extends AbstractController
 {

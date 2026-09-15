@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Http;
+namespace JLoco\Web\Http;
 
 /**
  * 301 redirects from the old "index.php?page=<name>" URLs (bookmarks, forum posts, the launcher's

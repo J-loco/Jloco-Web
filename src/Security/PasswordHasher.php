@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Security;
+namespace JLoco\Web\Security;
 
-use StarLoco\Web\Config;
+use JLoco\Web\Config;
 
 /**
- * Account password hashes, shared with StarLoco-Login (org.starloco.locos.login.packet.Password).
+ * Account password hashes, shared with JLoco-Login (org.jloco.locos.login.packet.Password).
  *
  * Two formats live side by side in world_accounts.pass:
  *  - legacy: hex SHA-512 of the hex MD5 of the password (unsalted, fast: weak);
@@ -22,7 +22,7 @@ final readonly class PasswordHasher
     public const string SCHEME_LEGACY = 'legacy';
     public const string SCHEME_PBKDF2 = 'pbkdf2';
 
-    /** OWASP 2023 recommendation for PBKDF2-HMAC-SHA512. Must match StarLoco-Login. */
+    /** OWASP 2023 recommendation for PBKDF2-HMAC-SHA512. Must match JLoco-Login. */
     public const int PBKDF2_ITERATIONS = 210_000;
     private const string PBKDF2_PREFIX = 'pbkdf2_sha512';
     private const int SALT_BYTES = 16;

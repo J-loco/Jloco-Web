@@ -69,23 +69,23 @@ jobs:
           context: .
           target: production
           push: false
-          tags: starloco/web:ci
+          tags: jloco/web:ci
 
   experience:
-    name: XP tables in sync with StarLoco-Game
+    name: XP tables in sync with JLoco-Game
     runs-on: ubuntu-latest
-    # StarLoco-Game is private: add a read-only token as the STARLOCO_GAME_TOKEN secret to enable this job.
+    # JLoco-Game is private: add a read-only token as the JLOCO_GAME_TOKEN secret to enable this job.
     env:
-      HAS_GAME_TOKEN: ${{ secrets.STARLOCO_GAME_TOKEN != '' }}
+      HAS_GAME_TOKEN: ${{ secrets.JLOCO_GAME_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v7
         if: env.HAS_GAME_TOKEN == 'true'
       - uses: actions/checkout@v7
         if: env.HAS_GAME_TOKEN == 'true'
         with:
-          repository: JimmyMtl/Starloco-Game
-          token: ${{ secrets.STARLOCO_GAME_TOKEN }}
-          path: starloco-game
+          repository: J-loco/Jloco-Game
+          token: ${{ secrets.JLOCO_GAME_TOKEN }}
+          path: jloco-game
           sparse-checkout: scripts/data/Experience.lua
           sparse-checkout-cone-mode: false
       - uses: shivammathur/setup-php@v2
@@ -95,7 +95,7 @@ jobs:
           coverage: none
       - name: Compare src/Game/Experience.php with Experience.lua
         if: env.HAS_GAME_TOKEN == 'true'
-        run: php bin/sync-experience --check starloco-game/scripts/data/Experience.lua
+        run: php bin/sync-experience --check jloco-game/scripts/data/Experience.lua
       - name: Skipped
         if: env.HAS_GAME_TOKEN != 'true'
-        run: echo "STARLOCO_GAME_TOKEN is not configured, XP table check skipped."
+        run: echo "JLOCO_GAME_TOKEN is not configured, XP table check skipped."

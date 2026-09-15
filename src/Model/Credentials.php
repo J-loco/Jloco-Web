@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Model;
+namespace JLoco\Web\Model;
 
 /** What authentication needs from world_accounts. Kept apart from Account so the hash never reaches templates. */
 final readonly class Credentials

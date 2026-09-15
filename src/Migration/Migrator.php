@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Migration;
+namespace JLoco\Web\Migration;
 
 use PDO;
 use RuntimeException;

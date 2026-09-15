@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Tests\Integration;
+namespace JLoco\Web\Tests\Integration;
 
-use StarLoco\Web\Repository\GameRepository;
-use StarLoco\Web\Repository\NewsRepository;
-use StarLoco\Web\Repository\PlayerRepository;
-use StarLoco\Web\Service\Sidebar;
+use JLoco\Web\Repository\GameRepository;
+use JLoco\Web\Repository\NewsRepository;
+use JLoco\Web\Repository\PlayerRepository;
+use JLoco\Web\Service\Sidebar;
 
 /** News, characters, drops and the sidebar against the real schemas. */
 final class ContentRepositoriesTest extends IntegrationTestCase
@@ -19,7 +19,7 @@ final class ContentRepositoriesTest extends IntegrationTestCase
         $first = $news->create('Équipe', 'Mise à jour', '<p>Contenu</p>');
         $news->create('Équipe', 'Deuxième', 'x');
         self::assertSame(2, $news->count());
-        self::assertSame(['Deuxième', 'Mise à jour'], array_map(static fn (\StarLoco\Web\Model\NewsPost $p): string => $p->title, $news->latest(10)));
+        self::assertSame(['Deuxième', 'Mise à jour'], array_map(static fn (\JLoco\Web\Model\NewsPost $p): string => $p->title, $news->latest(10)));
         self::assertSame('Mise à jour', $news->latest(1, 1)[0]->title);
 
         $news->delete($first);
@@ -28,7 +28,7 @@ final class ContentRepositoriesTest extends IntegrationTestCase
         $news->createGameNews('Maintenance ce soir', 'Maintenance');
         $news->createGameNews('Event', 'Event');
         $game = $news->gameNews();
-        self::assertSame([2, 1], array_map(static fn (\StarLoco\Web\Model\GameNews $n): int => $n->id, $game), 'ids continue from MAX(id): the column is not AUTO_INCREMENT');
+        self::assertSame([2, 1], array_map(static fn (\JLoco\Web\Model\GameNews $n): int => $n->id, $game), 'ids continue from MAX(id): the column is not AUTO_INCREMENT');
         self::assertSame((int) date('Ymd'), $game[0]->date);
         $news->deleteGameNews(2);
         self::assertCount(1, $news->gameNews());
@@ -44,11 +44,11 @@ final class ContentRepositoriesTest extends IntegrationTestCase
         $this->insert($this->login(), 'world_players', $base + ['name' => 'Cra', 'groupe' => -1, 'level' => 10, 'xp' => 19_200, 'honor' => 99, 'jobs' => '2,999', 'deshonor' => 2, 'logged' => 1]);
 
         $players = new PlayerRepository($this->database);
-        self::assertSame(['NormalDefault', 'Iopette', 'Cra'], array_map(static fn (\StarLoco\Web\Model\Character $c): string => $c->name, $players->topByXp(10)));
-        self::assertSame(['Cra', 'NormalDefault', 'Iopette'], array_map(static fn (\StarLoco\Web\Model\Character $c): string => $c->name, $players->topByHonor(10)));
-        self::assertSame(['NormalDefault', 'Iopette', 'Cra'], array_map(static fn (\StarLoco\Web\Model\Character $c): string => $c->name, $players->podium(10)));
+        self::assertSame(['NormalDefault', 'Iopette', 'Cra'], array_map(static fn (\JLoco\Web\Model\Character $c): string => $c->name, $players->topByXp(10)));
+        self::assertSame(['Cra', 'NormalDefault', 'Iopette'], array_map(static fn (\JLoco\Web\Model\Character $c): string => $c->name, $players->topByHonor(10)));
+        self::assertSame(['NormalDefault', 'Iopette', 'Cra'], array_map(static fn (\JLoco\Web\Model\Character $c): string => $c->name, $players->podium(10)));
         self::assertSame(4, count($players->byAccount($account)));
-        self::assertSame(['NormalDefault', 'Cra'], array_map(static fn (\StarLoco\Web\Model\Character $c): string => $c->name, $players->wanted()));
+        self::assertSame(['NormalDefault', 'Cra'], array_map(static fn (\JLoco\Web\Model\Character $c): string => $c->name, $players->wanted()));
         self::assertTrue($players->wanted()[1]->online);
         self::assertSame(1, $players->countOnline(601));
 
@@ -88,7 +88,7 @@ final class ContentRepositoriesTest extends IntegrationTestCase
         $this->insert($this->login(), 'world_players', $base + ['account' => $shown, 'name' => 'Visible', 'level' => 10, 'xp' => 100_000]);
 
         $data = $this->container()->get(Sidebar::class)->data();
-        self::assertSame(['Cache', 'Visible'], array_map(static fn (\StarLoco\Web\Model\LocatedCharacter $e): string => $e->character->name, $data->podium));
+        self::assertSame(['Cache', 'Visible'], array_map(static fn (\JLoco\Web\Model\LocatedCharacter $e): string => $e->character->name, $data->podium));
         self::assertNull($data->podium[0]->place);
         $place = $data->podium[1]->place;
         self::assertNotNull($place);

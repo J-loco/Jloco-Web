@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Http;
+namespace JLoco\Web\Http;
 
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
 use FastRoute\RouteParser;
 use InvalidArgumentException;
-use StarLoco\Web\Config;
+use JLoco\Web\Config;
 
 use function FastRoute\simpleDispatcher;
 

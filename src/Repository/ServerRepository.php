@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Repository;
+namespace JLoco\Web\Repository;
 
-use StarLoco\Web\Database;
-use StarLoco\Web\Model\WorldServer;
+use JLoco\Web\Database;
+use JLoco\Web\Model\WorldServer;
 
-/** starloco_login.world_servers, website_users_votes and a few totals. */
+/** jloco_login.world_servers, website_users_votes and a few totals. */
 final readonly class ServerRepository
 {
     public function __construct(private Database $database)

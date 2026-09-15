@@ -6,10 +6,10 @@ declare(strict_types=1);
  * Service wiring. Everything else is autowired by constructor type (src/Container.php).
  */
 
-use StarLoco\Web\Config;
-use StarLoco\Web\Container;
-use StarLoco\Web\Http\Request;
-use StarLoco\Web\View\TwigFactory;
+use JLoco\Web\Config;
+use JLoco\Web\Container;
+use JLoco\Web\Http\Request;
+use JLoco\Web\View\TwigFactory;
 use Twig\Environment;
 
 require_once __DIR__ . '/autoload.php';

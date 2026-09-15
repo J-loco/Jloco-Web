@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Tests\Integration;
+namespace JLoco\Web\Tests\Integration;
 
 use PDOException;
-use StarLoco\Web\Migration\Migrator;
-use StarLoco\Web\Migration\WebUserProvisioner;
-use StarLoco\Web\Repository\AccountRepository;
-use StarLoco\Web\Security\PasswordHasher;
-use StarLoco\Web\Security\Throttle;
-use StarLoco\Web\Service\AuthService;
-use StarLoco\Web\Service\PasswordResetService;
-use StarLoco\Web\Service\VoteService;
-use StarLoco\Web\Tests\Unit\Security\PasswordHasherTest;
+use JLoco\Web\Migration\Migrator;
+use JLoco\Web\Migration\WebUserProvisioner;
+use JLoco\Web\Repository\AccountRepository;
+use JLoco\Web\Security\PasswordHasher;
+use JLoco\Web\Security\Throttle;
+use JLoco\Web\Service\AuthService;
+use JLoco\Web\Service\PasswordResetService;
+use JLoco\Web\Service\VoteService;
+use JLoco\Web\Tests\Unit\Security\PasswordHasherTest;
 
 /** Registration, login, password changes, resets, votes, migrations and database grants. */
 final class AuthenticationTest extends IntegrationTestCase
@@ -156,7 +156,7 @@ final class AuthenticationTest extends IntegrationTestCase
 
     public function testPortalDatabaseUserOnlyGetsTheGrantsItNeeds(): void
     {
-        $user = 'starloco_web_test';
+        $user = 'jloco_web_test';
         $password = bin2hex(random_bytes(12));
         $admin = $this->login();
 

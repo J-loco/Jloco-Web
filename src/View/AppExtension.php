@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\View;
+namespace JLoco\Web\View;
 
 use DateTimeImmutable;
 use DateTimeInterface;
 use IntlDateFormatter;
-use StarLoco\Web\Config;
-use StarLoco\Web\Container;
-use StarLoco\Web\Game\Character as CharacterLabels;
-use StarLoco\Web\Game\Experience;
-use StarLoco\Web\Game\ItemEffects;
-use StarLoco\Web\Http\Router;
-use StarLoco\Web\Model\Character;
-use StarLoco\Web\Model\ShopItem;
-use StarLoco\Web\Security\Csrf;
-use StarLoco\Web\Security\Session;
-use StarLoco\Web\Service\AuthService;
-use StarLoco\Web\Service\Sidebar;
+use JLoco\Web\Config;
+use JLoco\Web\Container;
+use JLoco\Web\Game\Character as CharacterLabels;
+use JLoco\Web\Game\Experience;
+use JLoco\Web\Game\ItemEffects;
+use JLoco\Web\Http\Router;
+use JLoco\Web\Model\Character;
+use JLoco\Web\Model\ShopItem;
+use JLoco\Web\Security\Csrf;
+use JLoco\Web\Security\Session;
+use JLoco\Web\Service\AuthService;
+use JLoco\Web\Service\Sidebar;
 use Twig\Extension\AbstractExtension;
 use Twig\Markup;
 use Twig\TwigFilter;

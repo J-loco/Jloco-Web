@@ -6,7 +6,7 @@ repository + Twig template, styled with Tailwind, served from `public/` at real 
 ## Layout
 
 ```
-StarLoco-Web/
+JLoco-Web/
 ├─ public/                   ← the only web-served folder (Apache Alias /dofus)
 │  ├─ index.php              ← front controller (FallbackResource)
 │  ├─ assets/                ← app.css (built, git-ignored), app.js, img/, fonts/
@@ -64,7 +64,7 @@ Every legacy URL above answers `301` to its new path (`src/Http/LegacyUrls.php`)
 
 ## Front-end
 
-- **Tailwind v4.3** standalone CLI, no Node: the `starloco_web_assets` compose service (Dockerfile
+- **Tailwind v4.3** standalone CLI, no Node: the `jloco_web_assets` compose service (Dockerfile
   target `tailwind`) builds `public/assets/app.css`; the `production` target builds it into the image.
   Tokens (brand amber palette, Bebas Neue display font) and components (`.card`, `.btn-*`, `.input`,
   `.table`, `.tabs`, `.badge`…) are in `assets/css/app.css`; Twig macros in `templates/components/ui.html.twig`.
@@ -97,7 +97,7 @@ Every legacy URL above answers `301` to its new path (`src/Http/LegacyUrls.php`)
 
 - Apache serves only `public/` (`docker/apache.conf`: `Alias ${APP_BASE_PATH}`, `FallbackResource`);
   `/` redirects to `/dofus/`.
-- `runtime` target (compose, code bind-mounted at `/var/www/starloco-web`), `tailwind` target (asset
+- `runtime` target (compose, code bind-mounted at `/var/www/jloco-web`), `tailwind` target (asset
   build), `production` target (code + CSS baked in, `opcache.validate_timestamps=0`,
   `public/launcher/files` excluded: mount it). Verified: production image serves pages, CSS, `lang/`,
   launcher endpoints; source files answer 404.

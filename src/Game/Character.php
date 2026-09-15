@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Game;
+namespace JLoco\Web\Game;
 
 /**
  * Labels for character data stored as ids (world_players.class, sexe, alignement).

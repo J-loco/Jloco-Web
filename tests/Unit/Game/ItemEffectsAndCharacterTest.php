@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Tests\Unit\Game;
+namespace JLoco\Web\Tests\Unit\Game;
 
 use PHPUnit\Framework\TestCase;
-use StarLoco\Web\Game\Character;
-use StarLoco\Web\Game\ItemEffects;
+use JLoco\Web\Game\Character;
+use JLoco\Web\Game\ItemEffects;
 
 final class ItemEffectsAndCharacterTest extends TestCase
 {

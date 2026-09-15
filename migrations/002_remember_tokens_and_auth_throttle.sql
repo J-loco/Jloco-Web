@@ -1,5 +1,5 @@
 -- Remember-me tokens (include/auth.php) and brute-force throttle for login, password reset, secret answer.
--- StarLoco-Web "remember me": one row per issued cookie (selector:validator).
+-- JLoco-Web "remember me": one row per issued cookie (selector:validator).
 -- Only a SHA-256 of the validator is stored; tokens are single-use and rotated.
 CREATE TABLE IF NOT EXISTS `website_remember_tokens` (
     `selector`       CHAR(24)    NOT NULL,
@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS `website_remember_tokens` (
     KEY `idx_account` (`account`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- StarLoco-Web brute-force throttle: failed login / password-reset / secret-answer attempts.
+-- JLoco-Web brute-force throttle: failed login / password-reset / secret-answer attempts.
 CREATE TABLE IF NOT EXISTS `website_auth_attempts` (
     `id`           BIGINT      NOT NULL AUTO_INCREMENT,
     `ip`           VARCHAR(45) NOT NULL,

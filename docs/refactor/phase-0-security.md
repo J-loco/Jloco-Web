@@ -37,7 +37,7 @@ paths later is a one-function change).
       `*.md`, `Dockerfile`, and the disabled captcha.
 - [x] **No DB error leak** (S12) — errors go to the PHP log; visitors see a generic message
       unless `APP_DEBUG=1`.
-- [x] **Secrets out of `docker-compose.yml`** (S13) — `StarLoco-Game/.env` (git-ignored) +
+- [x] **Secrets out of `docker-compose.yml`** (S13) — `JLoco-Game/.env` (git-ignored) +
       `.env.example`. A dedicated least-privilege DB user is Phase 1.
 - [x] **Password reset** (S14) — `random_int`, exact match, account kept in session between steps.
 - [x] **Dedipass over HTTPS, key from env** (S15).
@@ -52,9 +52,9 @@ Deferred to Phase 1: captcha (S17, needs GD in the image).
 Known limitation, by design until Phase 2: page actions run after `include/header.php`, so a
 flash message queued *before* a POST that redirects can be lost. Controllers fix this.
 
-## New configuration (env of `starloco_web`)
+## New configuration (env of `jloco_web`)
 
-Set in `StarLoco-Game/.env` as `WEB_APP_URL`, `WEB_APP_DEBUG`, `WEB_TRUST_CLOUDFLARE`,
+Set in `JLoco-Game/.env` as `WEB_APP_URL`, `WEB_APP_DEBUG`, `WEB_TRUST_CLOUDFLARE`,
 `WEB_DEDIPASS_PUBLIC_KEY` (mapped by `docker-compose.yml`); `DB_ROOT_PASSWORD` feeds both MariaDB and `DB_PASS`.
 
 | Variable | Default | Meaning |
@@ -67,7 +67,7 @@ Set in `StarLoco-Game/.env` as `WEB_APP_URL`, `WEB_APP_DEBUG`, `WEB_TRUST_CLOUDF
 
 ## Migration
 
-`StarLoco-Game/db-init/12-update_login_web_security.sql` — `website_remember_tokens`,
+`JLoco-Game/db-init/12-update_login_web_security.sql` — `website_remember_tokens`,
 `website_auth_attempts`.
 
 ## Rules for new code (until Phase 2 replaces them)

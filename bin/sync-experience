@@ -2,20 +2,20 @@
 <?php
 
 /**
- * Keeps src/Game/Experience.php in sync with StarLoco-Game/scripts/data/Experience.lua.
+ * Keeps src/Game/Experience.php in sync with JLoco-Game/scripts/data/Experience.lua.
  *
  *   php bin/sync-experience [--check] [path/to/Experience.lua]
  *
  * The Lua file is the source of truth (the game server loads it). Without --check the PHP tables
  * are rewritten; with --check the script only reports a difference and exits with 1.
- * The path defaults to EXPERIENCE_LUA, then ../StarLoco-Game/scripts/data/Experience.lua.
+ * The path defaults to EXPERIENCE_LUA, then ../JLoco-Game/scripts/data/Experience.lua.
  */
 
 declare(strict_types=1);
 
 $check = in_array('--check', $argv, true);
 $arguments = array_values(array_filter(array_slice($argv, 1), static fn (string $arg): bool => $arg !== '--check'));
-$luaPath = $arguments[0] ?? (getenv('EXPERIENCE_LUA') ?: dirname(__DIR__, 2) . '/StarLoco-Game/scripts/data/Experience.lua');
+$luaPath = $arguments[0] ?? (getenv('EXPERIENCE_LUA') ?: dirname(__DIR__, 2) . '/JLoco-Game/scripts/data/Experience.lua');
 $phpPath = dirname(__DIR__) . '/src/Game/Experience.php';
 
 if (!is_file($luaPath)) {

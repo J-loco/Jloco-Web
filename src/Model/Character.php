@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Model;
+namespace JLoco\Web\Model;
 
-/** A row of starloco_login.world_players. Columns a query does not select keep their default. */
+/** A row of jloco_login.world_players. Columns a query does not select keep their default. */
 final readonly class Character
 {
     public function __construct(

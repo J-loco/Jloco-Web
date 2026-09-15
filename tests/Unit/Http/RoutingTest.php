@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Tests\Unit\Http;
+namespace JLoco\Web\Tests\Unit\Http;
 
 use FastRoute\Dispatcher;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use StarLoco\Web\Controller\LadderController;
-use StarLoco\Web\Http\LegacyUrls;
-use StarLoco\Web\Http\Request;
-use StarLoco\Web\Http\Router;
-use StarLoco\Web\Tests\Support\TestConfig;
+use JLoco\Web\Controller\LadderController;
+use JLoco\Web\Http\LegacyUrls;
+use JLoco\Web\Http\Request;
+use JLoco\Web\Http\Router;
+use JLoco\Web\Tests\Support\TestConfig;
 
 final class RoutingTest extends TestCase
 {

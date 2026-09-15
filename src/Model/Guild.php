@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Model;
+namespace JLoco\Web\Model;
 
-/** A row of starloco_login.world_guilds. */
+/** A row of jloco_login.world_guilds. */
 final readonly class Guild
 {
     public function __construct(

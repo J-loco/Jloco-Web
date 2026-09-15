@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Service;
+namespace JLoco\Web\Service;
 
-use StarLoco\Web\Model\Character;
-use StarLoco\Web\Model\LocatedCharacter;
-use StarLoco\Web\Model\Place;
-use StarLoco\Web\Model\SidebarData;
-use StarLoco\Web\Model\SidebarStats;
-use StarLoco\Web\Repository\AccountRepository;
-use StarLoco\Web\Repository\GameRepository;
-use StarLoco\Web\Repository\GuildRepository;
-use StarLoco\Web\Repository\PlayerRepository;
-use StarLoco\Web\Repository\ServerRepository;
+use JLoco\Web\Model\Character;
+use JLoco\Web\Model\LocatedCharacter;
+use JLoco\Web\Model\Place;
+use JLoco\Web\Model\SidebarData;
+use JLoco\Web\Model\SidebarStats;
+use JLoco\Web\Repository\AccountRepository;
+use JLoco\Web\Repository\GameRepository;
+use JLoco\Web\Repository\GuildRepository;
+use JLoco\Web\Repository\PlayerRepository;
+use JLoco\Web\Repository\ServerRepository;
 
 /**
  * Data for the sidebar shown on most pages: server status, statistics, top players, wanted players.

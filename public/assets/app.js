@@ -1,4 +1,4 @@
-// StarLoco-Web: the little interactivity the site needs, without a framework (keeps the CSP strict).
+// JLoco-Web: the little interactivity the site needs, without a framework (keeps the CSP strict).
 // Everything is progressive: links and forms work without JavaScript.
 (() => {
   const closeMenus = (except) => {

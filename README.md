@@ -1,8 +1,8 @@
-# StarLoco Web
+# JLoco Web
 
-StarLoco Web is the web portal for the StarLoco Dofus 1.39 server stack. It provides account registration and management, server status, ladders, drop search, voting, a points shop, news administration, and the HTTP endpoints used by the desktop launcher and game client.
+JLoco Web is the web portal for the JLoco Dofus 1.39 server stack. It provides account registration and management, server status, ladders, drop search, voting, a points shop, news administration, and the HTTP endpoints used by the desktop launcher and game client.
 
-The application is written for PHP 8.4 and uses FastRoute, Twig, PDO, Symfony Mailer, and Tailwind CSS. It is designed to run alongside [StarLoco Game](https://github.com/StarLoco/StarLoco) and StarLoco Login, which own the game and account databases.
+The application is written for PHP 8.4 and uses FastRoute, Twig, PDO, Symfony Mailer, and Tailwind CSS. It is designed to run alongside [JLoco Game](https://github.com/JLoco/JLoco) and JLoco Login, which own the game and account databases.
 
 ## Features
 
@@ -18,13 +18,13 @@ The application is written for PHP 8.4 and uses FastRoute, Twig, PDO, Symfony Ma
 
 ## Quick start with Docker
 
-The recommended development setup uses the Compose stack in a sibling `StarLoco-Game` checkout. The directories should be arranged like this:
+The recommended development setup uses the Compose stack in a sibling `JLoco-Game` checkout. The directories should be arranged like this:
 
 ```text
 workspace/
-├── StarLoco-Game/
-├── StarLoco-Login/
-└── StarLoco-Web/
+├── JLoco-Game/
+├── JLoco-Login/
+└── JLoco-Web/
 ```
 
 Docker and Docker Compose are the only host requirements for this workflow.
@@ -32,11 +32,11 @@ Docker and Docker Compose are the only host requirements for this workflow.
 1. Create the stack environment file:
 
    ```bash
-   cd ../StarLoco-Game
+   cd ../JLoco-Game
    cp .env.example .env
    ```
 
-2. Set at least `DB_ROOT_PASSWORD` and `WEB_DB_PASSWORD` in `StarLoco-Game/.env`. Review the remaining `WEB_*` settings if the portal will not use the defaults.
+2. Set at least `DB_ROOT_PASSWORD` and `WEB_DB_PASSWORD` in `JLoco-Game/.env`. Review the remaining `WEB_*` settings if the portal will not use the defaults.
 
 3. Build and start the stack:
 
@@ -46,10 +46,10 @@ Docker and Docker Compose are the only host requirements for this workflow.
 
 4. Open <http://127.0.0.1/dofus/>.
 
-Compose initializes MariaDB, applies the web migrations, provisions a least-privilege `starloco_web` database user, builds the Tailwind stylesheet, and starts the portal. View portal logs with:
+Compose initializes MariaDB, applies the web migrations, provisions a least-privilege `jloco_web` database user, builds the Tailwind stylesheet, and starts the portal. View portal logs with:
 
 ```bash
-docker compose logs -f starloco_web
+docker compose logs -f jloco_web
 ```
 
 ### Start only the portal dependencies
@@ -57,7 +57,7 @@ docker compose logs -f starloco_web
 If the game and login services are not needed, Compose can start the database and portal path only:
 
 ```bash
-docker compose up -d starloco_web
+docker compose up -d jloco_web
 ```
 
 The server-status widgets will show the absent game services as offline.
@@ -66,7 +66,7 @@ The server-status widgets will show the absent game services as offline.
 
 All application settings are documented in [`.env.example`](.env.example). When running PHP directly, copy it to `.env`; real environment variables take precedence over values in that file.
 
-The Compose stack reads `StarLoco-Game/.env` instead. Portal settings use the same names with a `WEB_` prefix, for example:
+The Compose stack reads `JLoco-Game/.env` instead. Portal settings use the same names with a `WEB_` prefix, for example:
 
 | Direct PHP | Docker Compose | Purpose |
 | --- | --- | --- |
@@ -91,7 +91,7 @@ Only enable `TRUST_CLOUDFLARE`/`WEB_TRUST_CLOUDFLARE` when requests actually pas
 - PHP 8.4
 - Composer 2
 - PHP extensions: `gd`, `intl`, `pdo`, and `pdo_mysql`
-- MariaDB containing the StarLoco login and game schemas
+- MariaDB containing the JLoco login and game schemas
 - A web server whose document root is `public/` and whose unknown routes fall back to `public/index.php`
 
 Install PHP dependencies with:
@@ -104,32 +104,32 @@ Never expose the repository root through the web server; only `public/` is inten
 
 ### Quality checks
 
-From `StarLoco-Game`, run the complete CI-equivalent check in the development image:
+From `JLoco-Game`, run the complete CI-equivalent check in the development image:
 
 ```bash
-docker compose run --rm starloco_web_tools check
+docker compose run --rm jloco_web_tools check
 ```
 
 Individual Composer scripts can be passed to the same service:
 
 ```bash
-docker compose run --rm starloco_web_tools test:unit
-docker compose run --rm starloco_web_tools test:integration
-docker compose run --rm starloco_web_tools stan
-docker compose run --rm starloco_web_tools cs
-docker compose run --rm starloco_web_tools cs:fix
-docker compose run --rm starloco_web_tools rector
+docker compose run --rm jloco_web_tools test:unit
+docker compose run --rm jloco_web_tools test:integration
+docker compose run --rm jloco_web_tools stan
+docker compose run --rm jloco_web_tools cs
+docker compose run --rm jloco_web_tools cs:fix
+docker compose run --rm jloco_web_tools rector
 ```
 
-Integration tests create and remove dedicated `starloco_login_test` and `starloco_game_test` databases. The Compose tools service supplies the required database settings automatically.
+Integration tests create and remove dedicated `jloco_login_test` and `jloco_game_test` databases. The Compose tools service supplies the required database settings automatically.
 
 ### CSS assets
 
 The generated `public/assets/app.css` file is intentionally ignored by Git. Rebuild it after changing Twig templates, JavaScript class references, or `assets/css/app.css`:
 
 ```bash
-cd ../StarLoco-Game
-docker compose run --rm starloco_web_assets
+cd ../JLoco-Game
+docker compose run --rm jloco_web_assets
 ```
 
 The `production` Docker target performs this build and includes the resulting stylesheet in a self-contained image.
@@ -145,33 +145,33 @@ Add schema changes as re-runnable SQL files in `migrations/`, using the next num
 Apply pending migrations and refresh the portal database grants with:
 
 ```bash
-cd ../StarLoco-Game
-docker compose run --rm starloco_web_migrate
+cd ../JLoco-Game
+docker compose run --rm jloco_web_migrate
 ```
 
 ### Development email
 
-To inspect password-reset messages locally, set these values in `StarLoco-Game/.env`:
+To inspect password-reset messages locally, set these values in `JLoco-Game/.env`:
 
 ```dotenv
-WEB_MAILER_DSN=smtp://starloco_mailpit:1025
-WEB_MAIL_FROM=noreply@starloco.local
+WEB_MAILER_DSN=smtp://jloco_mailpit:1025
+WEB_MAIL_FROM=noreply@jloco.local
 ```
 
 Then start Mailpit and open <http://127.0.0.1:8025>:
 
 ```bash
-docker compose --profile mail up -d starloco_mailpit
+docker compose --profile mail up -d jloco_mailpit
 ```
 
 ### Shop item images
 
-The optional sprite tools derive the list of items sold by the shop and export their images from the sibling StarLoco Client checkout:
+The optional sprite tools derive the list of items sold by the shop and export their images from the sibling JLoco Client checkout:
 
 ```bash
-cd ../StarLoco-Game
-docker compose run --rm starloco_web_tools item-sprites
-docker compose run --rm starloco_web_sprites
+cd ../JLoco-Game
+docker compose run --rm jloco_web_tools item-sprites
+docker compose run --rm jloco_web_sprites
 ```
 
 ## Architecture
@@ -194,7 +194,7 @@ public/index.php
 - `migrations/` contains idempotent portal schema changes.
 - `tests/Unit/` and `tests/Integration/` cover domain and database behavior.
 
-The portal reads and writes the existing StarLoco login and game databases; it is not a standalone account or game server.
+The portal reads and writes the existing JLoco login and game databases; it is not a standalone account or game server.
 
 ## Stable client endpoints
 

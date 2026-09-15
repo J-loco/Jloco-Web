@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Tests\Integration;
+namespace JLoco\Web\Tests\Integration;
 
-use StarLoco\Web\Repository\AccountRepository;
+use JLoco\Web\Repository\AccountRepository;
 
 final class AccountRepositoryTest extends IntegrationTestCase
 {

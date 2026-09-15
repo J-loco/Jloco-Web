@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Tests\Integration;
+namespace JLoco\Web\Tests\Integration;
 
 use PDO;
 use PHPUnit\Framework\TestCase;
-use StarLoco\Web\Config;
-use StarLoco\Web\Container;
-use StarLoco\Web\Database;
-use StarLoco\Web\Http\Request;
-use StarLoco\Web\Migration\Migrator;
-use StarLoco\Web\Tests\Support\TestConfig;
-use StarLoco\Web\View\TwigFactory;
+use JLoco\Web\Config;
+use JLoco\Web\Container;
+use JLoco\Web\Database;
+use JLoco\Web\Http\Request;
+use JLoco\Web\Migration\Migrator;
+use JLoco\Web\Tests\Support\TestConfig;
+use JLoco\Web\View\TwigFactory;
 use Twig\Environment;
 
 /**
  * Base class for tests against a real MariaDB (TEST_DB_HOST, TEST_DB_USER, TEST_DB_PASS).
  *
- * The first test of a run (re)creates starloco_login_test / starloco_game_test from
+ * The first test of a run (re)creates jloco_login_test / jloco_game_test from
  * tests/Integration/schema/*.sql and applies migrations/*.sql; every test starts with empty tables.
  */
 abstract class IntegrationTestCase extends TestCase
@@ -31,7 +31,7 @@ abstract class IntegrationTestCase extends TestCase
     protected function setUp(): void
     {
         if (getenv('TEST_DB_HOST') === false) {
-            self::markTestSkipped('Integration tests need TEST_DB_HOST (docker compose run --rm starloco_web_tools test).');
+            self::markTestSkipped('Integration tests need TEST_DB_HOST (docker compose run --rm jloco_web_tools test).');
         }
         $this->config = TestConfig::make();
         if (!self::$schemaReady) {

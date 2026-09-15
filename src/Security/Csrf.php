@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Security;
+namespace JLoco\Web\Security;
 
 /**
  * One token per session, sent as the "_csrf" field of every POST form.

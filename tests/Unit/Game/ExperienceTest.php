@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Tests\Unit\Game;
+namespace JLoco\Web\Tests\Unit\Game;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use StarLoco\Web\Game\Experience;
+use JLoco\Web\Game\Experience;
 
 final class ExperienceTest extends TestCase
 {

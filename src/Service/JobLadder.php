@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Service;
+namespace JLoco\Web\Service;
 
-use StarLoco\Web\Game\Experience;
-use StarLoco\Web\Model\JobRanking;
-use StarLoco\Web\Repository\PlayerRepository;
+use JLoco\Web\Game\Experience;
+use JLoco\Web\Model\JobRanking;
+use JLoco\Web\Repository\PlayerRepository;
 
 /** Best characters of a job, ranked by job level then experience. */
 final readonly class JobLadder

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Model;
+namespace JLoco\Web\Model;
 
 /** Drop viewer result: all drops of one monster (or of one item). */
 final readonly class DropGroup

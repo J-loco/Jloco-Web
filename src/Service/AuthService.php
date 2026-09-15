@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Service;
+namespace JLoco\Web\Service;
 
-use StarLoco\Web\Captcha;
-use StarLoco\Web\Config;
-use StarLoco\Web\Model\Account;
-use StarLoco\Web\Repository\AccountRepository;
-use StarLoco\Web\Security\PasswordHasher;
-use StarLoco\Web\Security\RememberMe;
-use StarLoco\Web\Security\Session;
-use StarLoco\Web\Security\Throttle;
-use StarLoco\Web\Support\Text;
+use JLoco\Web\Captcha;
+use JLoco\Web\Config;
+use JLoco\Web\Model\Account;
+use JLoco\Web\Repository\AccountRepository;
+use JLoco\Web\Security\PasswordHasher;
+use JLoco\Web\Security\RememberMe;
+use JLoco\Web\Security\Session;
+use JLoco\Web\Security\Throttle;
+use JLoco\Web\Support\Text;
 
 /**
  * Who is logged in, and how accounts log in, register and change passwords.
@@ -21,7 +21,7 @@ final class AuthService
 {
     private const string SESSION_ACCOUNT = 'account_id';
 
-    /** Account names the login server accepts (StarLoco-Login AccountName.verify: [A-Za-z0-9.@-]+). */
+    /** Account names the login server accepts (JLoco-Login AccountName.verify: [A-Za-z0-9.@-]+). */
     public const string ACCOUNT_NAME_PATTERN = '/^[A-Za-z0-9.@-]{3,30}$/';
 
     /**

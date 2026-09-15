@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Service;
+namespace JLoco\Web\Service;
 
-use StarLoco\Web\Config;
-use StarLoco\Web\Http\Request;
-use StarLoco\Web\Model\Account;
-use StarLoco\Web\Repository\AccountRepository;
-use StarLoco\Web\Repository\ServerRepository;
+use JLoco\Web\Config;
+use JLoco\Web\Http\Request;
+use JLoco\Web\Model\Account;
+use JLoco\Web\Repository\AccountRepository;
+use JLoco\Web\Repository\ServerRepository;
 
 /**
  * Vote rewards: one vote every COOLDOWN seconds per account and per IP.

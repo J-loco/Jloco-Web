@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Controller;
+namespace JLoco\Web\Controller;
 
-use StarLoco\Web\Http\Request;
-use StarLoco\Web\Http\Response;
-use StarLoco\Web\Repository\AccountRepository;
-use StarLoco\Web\Repository\PlayerRepository;
-use StarLoco\Web\Service\Dedipass;
+use JLoco\Web\Http\Request;
+use JLoco\Web\Http\Response;
+use JLoco\Web\Repository\AccountRepository;
+use JLoco\Web\Repository\PlayerRepository;
+use JLoco\Web\Service\Dedipass;
 
 final class AccountController extends AbstractController
 {

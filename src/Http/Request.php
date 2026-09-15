@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Http;
+namespace JLoco\Web\Http;
 
-use StarLoco\Web\Support\Text;
+use JLoco\Web\Support\Text;
 
 /**
  * Immutable view of the current HTTP request.

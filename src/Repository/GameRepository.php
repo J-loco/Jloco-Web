@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Repository;
+namespace JLoco\Web\Repository;
 
-use StarLoco\Web\Database;
-use StarLoco\Web\Model\Drop;
-use StarLoco\Web\Model\MapPosition;
+use JLoco\Web\Database;
+use JLoco\Web\Model\Drop;
+use JLoco\Web\Model\MapPosition;
 
 /**
- * Static data from the game database (starloco_game): jobs, drops, maps; plus sub-area names
+ * Static data from the game database (jloco_game): jobs, drops, maps; plus sub-area names
  * (login database) and shop gifts.
  */
 final readonly class GameRepository
@@ -69,7 +69,7 @@ final readonly class GameRepository
 
     /**
      * Queues an item for the account in the given game database; the game server delivers it at
-     * next login (same "template,quantity,jp" format as Account.addGift in StarLoco-Game).
+     * next login (same "template,quantity,jp" format as Account.addGift in JLoco-Game).
      */
     public function hasItemTemplate(string $gameDatabase, int $template): bool
     {

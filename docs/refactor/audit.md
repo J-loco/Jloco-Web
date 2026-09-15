@@ -1,8 +1,8 @@
 # Audit (2026-09-13)
 
-State of StarLoco-Web before the refactor: ~3,700 lines across 14 pages, PHP 8.2 in Docker
-(`php:8.2-apache`), two PDO connections to `starloco_login` (`$login`, `$connection`) and one to
-`starloco_game` (`$jiva`), opened on every request.
+State of JLoco-Web before the refactor: ~3,700 lines across 14 pages, PHP 8.2 in Docker
+(`php:8.2-apache`), two PDO connections to `jloco_login` (`$login`, `$connection`) and one to
+`jloco_game` (`$jiva`), opened on every request.
 
 ## Security
 
@@ -20,7 +20,7 @@ State of StarLoco-Web before the refactor: ~3,700 lines across 14 pages, PHP 8.2
 | S10 | Vote cooldown trusts `CF-Connecting-IP` even when not behind Cloudflare (spoofable → unlimited points) | `vote.php`, `CLOUDFLARE_ENABLE` | Medium |
 | S11 | Internal folders reachable over HTTP; `configuration/.htaccess` uses invalid syntax (returns 500 instead of 403); `class/`, `include/`, `pages/` not protected | `.htaccess` files | Medium |
 | S12 | DB errors printed to visitors (`die('Error : ' . $e->getMessage())`) | `configuration.php` | Low |
-| S13 | Secrets committed in `docker-compose.yml` (MariaDB root password); portal connects as `root` | `StarLoco-Game/docker-compose.yml` | Medium |
+| S13 | Secrets committed in `docker-compose.yml` (MariaDB root password); portal connects as `root` | `JLoco-Game/docker-compose.yml` | Medium |
 | S14 | Password reset uses `rand()` and `UPDATE ... WHERE account LIKE ?` | `password.php` | Low |
 | S15 | Dedipass API called over plain HTTP | `profile.php` | Low |
 | S16 | No security headers (clickjacking, MIME sniffing) | — | Low |
@@ -29,7 +29,7 @@ State of StarLoco-Web before the refactor: ~3,700 lines across 14 pages, PHP 8.2
 
 ## Correctness / schema drift
 
-The code predates the current `starloco_login` / `starloco_game` schemas.
+The code predates the current `jloco_login` / `jloco_game` schemas.
 
 | # | Finding | Where |
 |---|---|---|
@@ -50,10 +50,10 @@ The code predates the current `starloco_login` / `starloco_game` schemas.
 | D15 | Forum news page returned 500: empty `URL_RSS_NEWS_IPB` passed to `DOMDocument::load()`; external feed HTML printed unescaped | `pages/news.php`, `include/rsslib.php` |
 | D16 | `display_errors` on in the image: the `utf8_encode` deprecation notice was printed inside the launcher JSON | `launcher/news.php` |
 | D17 | Buying inactive items or items from another server was possible (no `active`/`server` check) | `buy.php` |
-| D18 | Sidebar read sub-area names from `starloco_game.subarea_data.name` (no such column; names are in `starloco_login.world_base_sub_areas`); wanted-list `prepare()` received two arguments because of an unescaped quote | `include/rightmenu.php` (fixed in Phase 1) |
+| D18 | Sidebar read sub-area names from `jloco_game.subarea_data.name` (no such column; names are in `jloco_login.world_base_sub_areas`); wanted-list `prepare()` received two arguments because of an unescaped quote | `include/rightmenu.php` (fixed in Phase 1) |
 | D19 | Registration allowed `_` in account names, which the login server rejects (account unusable in game) | `AuthService` (fixed in Phase 3) |
-| D20 | Login server `AccountData.update()` wrote the in-memory password back, reverting site password changes; SQL built by concatenation | StarLoco-Login (fixed in Phase 3) |
-| D21 | Login server stored a missing nickname as the string `'null'` | StarLoco-Login `Account` (fixed in Phase 3) |
+| D20 | Login server `AccountData.update()` wrote the in-memory password back, reverting site password changes; SQL built by concatenation | JLoco-Login (fixed in Phase 3) |
+| D21 | Login server stored a missing nickname as the string `'null'` | JLoco-Login `Account` (fixed in Phase 3) |
 | D22 | Non-latin1 input compared with latin1 columns → "Illegal mix of collations" 500 | repositories (fixed in Phase 3, `Support\Text`) |
 
 ## Maintainability

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Model;
+namespace JLoco\Web\Model;
 
-/** A row of starloco_login.world_servers. */
+/** A row of jloco_login.world_servers. */
 final readonly class WorldServer
 {
     public function __construct(

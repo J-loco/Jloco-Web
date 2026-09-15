@@ -1,6 +1,6 @@
 {
-    "name": "starloco/web",
-    "description": "StarLoco web portal (registration, shop, ladder) and launcher endpoints",
+    "name": "jloco/web",
+    "description": "JLoco web portal (registration, shop, ladder) and launcher endpoints",
     "type": "project",
     "license": "proprietary",
     "require": {
@@ -16,7 +16,7 @@
     },
     "autoload": {
         "psr-4": {
-            "StarLoco\\Web\\": "src/"
+            "JLoco\\Web\\": "src/"
         }
     },
     "config": {
@@ -59,7 +59,7 @@
         "rector": "Show pending automated upgrades",
         "test": "Unit + integration tests (integration needs TEST_DB_*)",
         "check": "Everything CI runs",
-        "experience:check": "Fail if src/Game/Experience.php differs from StarLoco-Game Experience.lua (EXPERIENCE_LUA)",
+        "experience:check": "Fail if src/Game/Experience.php differs from JLoco-Game Experience.lua (EXPERIENCE_LUA)",
         "item-sprites": "List the shop item sprites to export (var/item-sprites.tsv)"
     }
 }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Model;
+namespace JLoco\Web\Model;
 
 /** A row in a drop viewer group: the other side of the relation (item or monster) and its rates. */
 final readonly class DropLine

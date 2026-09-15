@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Controller;
+namespace JLoco\Web\Controller;
 
-use StarLoco\Web\Http\Request;
-use StarLoco\Web\Http\Response;
-use StarLoco\Web\Model\Drop;
-use StarLoco\Web\Model\DropGroup;
-use StarLoco\Web\Model\DropLine;
-use StarLoco\Web\Repository\GameRepository;
-use StarLoco\Web\Support\Text;
+use JLoco\Web\Http\Request;
+use JLoco\Web\Http\Response;
+use JLoco\Web\Model\Drop;
+use JLoco\Web\Model\DropGroup;
+use JLoco\Web\Model\DropLine;
+use JLoco\Web\Repository\GameRepository;
+use JLoco\Web\Support\Text;
 
 /** Drop viewer: GET /drops?by=monster|item&q=… (shareable URLs). */
 final class DropController extends AbstractController

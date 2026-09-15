@@ -7,16 +7,16 @@ declare(strict_types=1);
  * Legacy "?page=" links are redirected by src/Http/LegacyUrls.php.
  */
 
-use StarLoco\Web\Controller\AccountController;
-use StarLoco\Web\Controller\AdminController;
-use StarLoco\Web\Controller\AuthController;
-use StarLoco\Web\Controller\DropController;
-use StarLoco\Web\Controller\HomeController;
-use StarLoco\Web\Controller\LadderController;
-use StarLoco\Web\Controller\PageController;
-use StarLoco\Web\Controller\ShopController;
-use StarLoco\Web\Controller\VoteController;
-use StarLoco\Web\Http\Route;
+use JLoco\Web\Controller\AccountController;
+use JLoco\Web\Controller\AdminController;
+use JLoco\Web\Controller\AuthController;
+use JLoco\Web\Controller\DropController;
+use JLoco\Web\Controller\HomeController;
+use JLoco\Web\Controller\LadderController;
+use JLoco\Web\Controller\PageController;
+use JLoco\Web\Controller\ShopController;
+use JLoco\Web\Controller\VoteController;
+use JLoco\Web\Http\Route;
 
 return [
     Route::get('/', 'home', [HomeController::class, 'index']),

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Security;
+namespace JLoco\Web\Security;
 
-use StarLoco\Web\Database;
-use StarLoco\Web\Http\Request;
+use JLoco\Web\Database;
+use JLoco\Web\Http\Request;
 
 /**
  * "Remember me" cookie "selector:validator". Only a SHA-256 of the validator is stored
@@ -13,7 +13,7 @@ use StarLoco\Web\Http\Request;
  */
 final readonly class RememberMe
 {
-    private const string COOKIE = 'starloco_remember';
+    private const string COOKIE = 'jloco_remember';
     private const int DAYS = 7;
 
     public function __construct(

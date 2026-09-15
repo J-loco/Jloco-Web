@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Security;
+namespace JLoco\Web\Security;
 
-use StarLoco\Web\Config;
+use JLoco\Web\Config;
 
 /**
  * Hardened PHP session + one-shot flash messages.
@@ -24,7 +24,7 @@ final readonly class Session
         }
         ini_set('session.use_strict_mode', '1');
         ini_set('session.use_only_cookies', '1');
-        session_name('STARLOCO_SESSID');
+        session_name('JLOCO_SESSID');
         $options = $this->cookieOptions(0);
         unset($options['expires']);
         session_set_cookie_params(['lifetime' => 0] + $options);

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Controller;
+namespace JLoco\Web\Controller;
 
-use StarLoco\Web\Config;
-use StarLoco\Web\Http\Request;
-use StarLoco\Web\Http\Response;
-use StarLoco\Web\Repository\ShopRepository;
-use StarLoco\Web\Service\ShopService;
+use JLoco\Web\Config;
+use JLoco\Web\Http\Request;
+use JLoco\Web\Http\Response;
+use JLoco\Web\Repository\ShopRepository;
+use JLoco\Web\Service\ShopService;
 
 final class ShopController extends AbstractController
 {

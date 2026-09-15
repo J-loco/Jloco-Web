@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Model;
+namespace JLoco\Web\Model;
 
 /** A character with its place, when the place may be shown. */
 final readonly class LocatedCharacter

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace StarLoco\Web\Model;
+namespace JLoco\Web\Model;
 
 /** An item for sale (website_shop_objects joined with its template). */
 final readonly class ShopItem
