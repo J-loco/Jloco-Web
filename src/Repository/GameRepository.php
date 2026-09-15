@@ -71,6 +71,14 @@ final readonly class GameRepository
      * Queues an item for the account in the given game database; the game server delivers it at
      * next login (same "template,quantity,jp" format as Account.addGift in StarLoco-Game).
      */
+    public function hasItemTemplate(string $gameDatabase, int $template): bool
+    {
+        $game = $gameDatabase === $this->database->gameDatabaseName() ? $this->database->game() : $this->database->connect($gameDatabase);
+        $query = $game->prepare('SELECT 1 FROM item_template WHERE id = ?');
+        $query->execute([$template]);
+        return $query->fetchColumn() !== false;
+    }
+
     public function addGift(string $gameDatabase, int $accountId, int $template, int $quantity, bool $maxStats): void
     {
         $gift = $template . ',' . $quantity . ',' . ($maxStats ? 1 : 0);

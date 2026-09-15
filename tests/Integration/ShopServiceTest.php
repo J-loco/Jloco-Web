@@ -18,6 +18,7 @@ final class ShopServiceTest extends IntegrationTestCase
         $this->insert($this->login(), 'website_shop_categories', ['id' => 12, 'name' => 'Familiers', 'active' => 1]);
         $this->insert($this->login(), 'website_shop_objects_templates', ['id' => 8949, 'type' => 18, 'name' => 'Bwak de Feu', 'description' => 'Un familier.', 'skin' => 8007, 'level' => 1, 'effects' => '7d#a#14#0#1d10+9']);
         $this->insert($this->login(), 'website_shop_objects', ['name' => 'Bwak de Feu', 'template' => 8949, 'jp' => 1, 'price' => 60, 'category' => 12, 'server' => '1', 'active' => 1]);
+        $this->insert($this->game(), 'item_template', ['id' => 8949, 'type' => 18, 'name' => 'Bwak de Feu']);
     }
 
     public function testCatalogue(): void
@@ -53,6 +54,20 @@ final class ShopServiceTest extends IntegrationTestCase
         self::assertSame('8949,1,1;8949,1,1', $this->scalar($this->game(), 'SELECT objects FROM gifts WHERE id = ?', [$this->accountId]), 'gifts are appended like Account.addGift');
     }
 
+    public function testLegacyShopRewardUsesClientKnownDeliveryTemplate(): void
+    {
+        $this->insert($this->login(), 'website_shop_objects_templates', ['id' => 26005, 'type' => 15, 'name' => 'Coffre Légendaire', 'skin' => 13, 'level' => 1]);
+        $this->insert($this->login(), 'website_shop_objects', ['name' => 'Coffre Légendaire', 'template' => 26005, 'jp' => 0, 'price' => 60, 'category' => 12, 'server' => '1', 'active' => 1]);
+        $this->insert($this->game(), 'item_template', ['id' => 12839, 'type' => 89, 'name' => 'Gemme Spirituelle Emballée']);
+
+        $service = $this->container()->get(ShopService::class);
+
+        self::assertNull($service->purchase($this->accountId, 1, 26005));
+        self::assertSame(40, (int) $this->scalar($this->login(), 'SELECT points FROM world_accounts WHERE guid = ?', [$this->accountId]));
+        self::assertSame('12839,1,0', $this->scalar($this->game(), 'SELECT objects FROM gifts WHERE id = ?', [$this->accountId]));
+        self::assertSame(1, (int) $this->scalar($this->login(), 'SELECT COUNT(*) FROM website_shop_objects_purchases WHERE template = 26005'));
+    }
+
     public function testRefusesWhenPointsAreMissingOrItemUnavailable(): void
     {
         $service = $this->container()->get(ShopService::class);
@@ -71,13 +86,30 @@ final class ShopServiceTest extends IntegrationTestCase
         self::assertSame('Cet objet n\'est pas en vente.', $service->purchase($this->accountId, 1, 8949));
     }
 
-    public function testPointsAreRefundedWhenDeliveryFails(): void
+    public function testMissingGameTemplateDoesNotDebitOrQueueGift(): void
+    {
+        $service = $this->container()->get(ShopService::class);
+        $this->game()->exec('DELETE FROM item_template WHERE id = 8949');
+
+        $errorLog = ini_set('error_log', '/dev/null');
+        try {
+            self::assertSame('Cet objet est temporairement indisponible.', $service->purchase($this->accountId, 1, 8949));
+        } finally {
+            ini_set('error_log', (string) $errorLog);
+        }
+
+        self::assertSame(100, (int) $this->scalar($this->login(), 'SELECT points FROM world_accounts WHERE guid = ?', [$this->accountId]));
+        self::assertFalse($this->scalar($this->game(), 'SELECT objects FROM gifts WHERE id = ?', [$this->accountId]));
+        self::assertSame(0, (int) $this->scalar($this->login(), 'SELECT COUNT(*) FROM website_shop_objects_purchases'));
+    }
+
+    public function testUnavailableGameDatabaseDoesNotDebitPoints(): void
     {
         $service = $this->container(['shopServers' => [1 => 'starloco_database_that_does_not_exist']])->get(ShopService::class);
 
         $errorLog = ini_set('error_log', '/dev/null'); // the failure is logged on purpose
         try {
-            self::assertSame('Une erreur s\'est produite, tes points ont été remboursés.', $service->purchase($this->accountId, 1, 8949));
+            self::assertSame('La boutique est temporairement indisponible.', $service->purchase($this->accountId, 1, 8949));
         } finally {
             ini_set('error_log', (string) $errorLog);
         }

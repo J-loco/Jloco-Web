@@ -91,3 +91,10 @@ CREATE TABLE `item_template` (
   PRIMARY KEY (`id`) USING BTREE,
   KEY `id` (`id`) USING BTREE
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
+CREATE TABLE `objectsactions` (
+  `template` int(11) NOT NULL DEFAULT 0,
+  `type` varchar(100) NOT NULL DEFAULT '',
+  `args` varchar(400) DEFAULT NULL,
+  PRIMARY KEY (`template`) USING BTREE,
+  KEY `template` (`template`) USING BTREE
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci ROW_FORMAT=DYNAMIC;
